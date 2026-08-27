@@ -1,0 +1,128 @@
+:root {
+  /* Coddy Dashboard System Tokens */
+  --canvas-graphite: #1a1b1e;
+  --panel-charcoal: #25262b;
+  --primary-cyan: #1eb7d6;
+  --primary-cyan-hover: #1693ad;
+  --promotion-amber: #f59e0b;
+  --promotion-amber-hover: #d97706;
+  --primary-copy: #f8f9fa;
+  --secondary-copy: #9ca3af;
+  --border-subtle: #373a40;
+  
+  --background: var(--canvas-graphite);
+  --foreground: var(--primary-copy);
+}
+
+html, body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Base Primitives */
+.panel {
+  background-color: var(--panel-charcoal);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s ease;
+}
+
+.panel-current {
+  border: 1px solid var(--primary-cyan);
+  box-shadow: 0 0 10px rgba(30, 183, 214, 0.1);
+}
+
+.panel-promo {
+  border: 1px solid var(--promotion-amber);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+}
+
+.btn-primary {
+  background-color: var(--primary-cyan);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-cyan-hover);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--primary-copy);
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.progress-track {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  height: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background-color: var(--primary-copy);
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+
+/* Utilities */
+.text-amber {
+  color: var(--promotion-amber);
+}
+
+.text-cyan {
+  color: var(--primary-cyan);
+}
+
+.text-secondary {
+  color: var(--secondary-copy);
+}
+
+/* Typography styles matching reference */
+.heading-main {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.subheading {
+  font-size: 1.1rem;
+  color: var(--secondary-copy);
+  margin-bottom: 2rem;
+}
