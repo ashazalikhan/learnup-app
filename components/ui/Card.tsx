@@ -4,11 +4,9 @@ import { type HTMLAttributes, type ReactNode } from "react";
 
 const variantClasses = {
   default: "bg-surface border-border",
-  glass: "glass-card",
-  elevated:
-    "bg-surface border-border shadow-lg dark:shadow-brand-900/10",
+  filled: "bg-surface-secondary border-border",
+  outline: "bg-transparent border-border",
   ghost: "bg-transparent border-transparent",
-  gradient: "",
 } as const;
 
 const paddingClasses = {
@@ -26,65 +24,26 @@ export type CardPadding = keyof typeof paddingClasses;
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant;
   padding?: CardPadding;
-  /** Adds hover lift effect */
   hoverable?: boolean;
-  /** Adds the brand gradient as border (glow effect) */
-  glowBorder?: boolean;
 }
 
 function Card({
   variant = "default",
   padding = "md",
   hoverable = false,
-  glowBorder = false,
   className = "",
   children,
   ...props
 }: CardProps) {
-  // Gradient variant uses a wrapper technique for gradient borders
-  if (variant === "gradient") {
-    return (
-      <div
-        className={[
-          "relative rounded-2xl p-[1px]",
-          hoverable
-            ? "transition-transform duration-200 hover:-translate-y-1"
-            : "",
-          className,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        style={{ backgroundImage: "var(--gradient-brand)" }}
-        {...props}
-      >
-        <div
-          className={[
-            "rounded-2xl bg-surface",
-            paddingClasses[padding],
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {children}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       className={[
         "rounded-2xl border",
-        "transition-all duration-200 ease-out",
+        "transition-colors duration-150",
         variantClasses[variant],
         paddingClasses[padding],
-        // Hoverable lift
         hoverable
-          ? "hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-brand-900/10 cursor-pointer"
-          : "",
-        // Glow border on hover
-        glowBorder
-          ? "hover:border-brand-400/40 hover:shadow-[0_0_24px_rgba(99,102,241,0.12)]"
+          ? "hover:border-border-hover hover:bg-surface-hover cursor-pointer"
           : "",
         className,
       ]
@@ -100,7 +59,6 @@ function Card({
 /* ── Card.Header ───────────────────────────────────────────── */
 
 interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
-  /** Optional action element (button, badge, etc.) aligned to the right */
   action?: ReactNode;
 }
 
@@ -128,7 +86,7 @@ interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {}
 function CardTitle({ className = "", children, ...props }: CardTitleProps) {
   return (
     <h3
-      className={`text-lg font-semibold text-foreground tracking-tight ${className}`}
+      className={`text-lg font-semibold text-text-primary tracking-tight ${className}`}
       {...props}
     >
       {children}
@@ -146,7 +104,7 @@ function CardDescription({
   ...props
 }: CardDescriptionProps) {
   return (
-    <p className={`text-sm text-muted mt-1 ${className}`} {...props}>
+    <p className={`text-sm text-text-secondary mt-1 ${className}`} {...props}>
       {children}
     </p>
   );

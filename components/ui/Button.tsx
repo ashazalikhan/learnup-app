@@ -2,28 +2,29 @@
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 
-/* ── Variant & Size Maps ───────────────────────────────────── */
+/* ── Variant Styles ────────────────────────────────────────── */
 
 const variantClasses = {
   primary:
-    "text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 shadow-md hover:shadow-lg",
+    "text-white bg-brand-600 hover:bg-brand-500 active:bg-brand-700",
   secondary:
-    "text-brand-700 bg-brand-50 hover:bg-brand-100 active:bg-brand-200 dark:text-brand-300 dark:bg-brand-900/30 dark:hover:bg-brand-900/50",
+    "text-text-primary bg-surface-secondary border border-border hover:bg-surface-hover hover:border-border-hover",
   ghost:
-    "text-foreground hover:bg-surface-hover active:bg-surface-active",
+    "text-text-secondary hover:text-text-primary hover:bg-surface-hover",
   destructive:
-    "text-white bg-destructive-500 hover:bg-destructive-600 active:bg-destructive-600 shadow-md",
+    "text-white bg-destructive-500 hover:bg-destructive-400",
   outline:
-    "text-foreground border border-border hover:border-border-hover hover:bg-surface-hover active:bg-surface-active",
-  gradient:
-    "text-white shadow-lg hover:shadow-xl",
+    "text-brand-400 border border-brand-700 hover:bg-brand-900/30 hover:border-brand-500",
+  cta:
+    "text-white font-semibold tracking-wide uppercase",
 } as const;
 
 const sizeClasses = {
-  sm: "h-8 px-3 text-xs gap-1.5 rounded-lg",
-  md: "h-10 px-4 text-sm gap-2 rounded-xl",
-  lg: "h-12 px-6 text-base gap-2.5 rounded-xl",
-  icon: "h-10 w-10 rounded-xl",
+  sm: "h-8 px-3 text-xs gap-1.5",
+  md: "h-10 px-4 text-sm gap-2",
+  lg: "h-12 px-6 text-base gap-2.5",
+  xl: "h-14 px-8 text-base gap-3",
+  icon: "h-10 w-10",
 } as const;
 
 export type ButtonVariant = keyof typeof variantClasses;
@@ -37,7 +38,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
-  /** Renders a full-width button */
   fullWidth?: boolean;
 }
 
@@ -68,34 +68,29 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={[
           // Base
           "inline-flex items-center justify-center font-medium",
-          "transition-all duration-200 ease-out",
+          "rounded-lg transition-all duration-150 ease-out",
           "focus-ring select-none",
           // Variant
           variantClasses[variant],
           // Size
           sizeClasses[size],
-          // Gradient needs inline style but we add the utility class
-          variant === "gradient" ? "gradient-button" : "",
           // Full width
           fullWidth ? "w-full" : "",
           // Disabled
-          isDisabled ? "opacity-50 cursor-not-allowed pointer-events-none" : "cursor-pointer",
-          // Hover lift for solid variants
-          !isDisabled && (variant === "primary" || variant === "gradient")
-            ? "hover:-translate-y-0.5 active:translate-y-0"
-            : "",
+          isDisabled
+            ? "opacity-40 cursor-not-allowed pointer-events-none"
+            : "cursor-pointer",
           className,
         ]
           .filter(Boolean)
           .join(" ")}
         style={
-          variant === "gradient"
-            ? { backgroundImage: "var(--gradient-brand)" }
+          variant === "cta"
+            ? { backgroundImage: "var(--gradient-cta)" }
             : undefined
         }
         {...props}
       >
-        {/* Loading spinner */}
         {loading && (
           <svg
             className="animate-spin h-4 w-4 shrink-0"
@@ -119,16 +114,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
 
-        {/* Left icon */}
         {!loading && leftIcon && (
           <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{leftIcon}</span>
         )}
 
-        {/* Label */}
         {size !== "icon" && children && <span>{children}</span>}
         {size === "icon" && children}
 
-        {/* Right icon */}
         {rightIcon && (
           <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{rightIcon}</span>
         )}
