@@ -52,8 +52,8 @@ export default function Home() {
             
             {/* Left Column: Copy & CTA */}
             <div className="flex flex-col items-start space-y-8 animate-fade-in">
-              <div className="inline-flex items-center rounded-full border border-border bg-surface-secondary px-3 py-1 text-sm font-medium text-text-primary">
-                <span className="flex h-2 w-2 rounded-full bg-brand-500 mr-2"></span>
+              <div className="inline-flex items-center border border-border bg-surface-secondary px-3 py-1 text-sm font-medium text-text-primary">
+                <span className="flex h-2 w-2 bg-brand-500 mr-2"></span>
                 Now available for college students
               </div>
               
@@ -103,10 +103,10 @@ export default function Home() {
               <div className="rounded-xl border border-border bg-surface shadow-2xl overflow-hidden aspect-[4/3] flex flex-col">
                 {/* Mockup Header */}
                 <div className="h-12 border-b border-border bg-surface-secondary flex items-center px-4 gap-2">
-                  <div className="w-3 h-3 rounded-full bg-border"></div>
-                  <div className="w-3 h-3 rounded-full bg-border"></div>
-                  <div className="w-3 h-3 rounded-full bg-border"></div>
-                  <div className="ml-4 h-6 bg-background rounded w-1/3 border border-border"></div>
+                  <div className="w-3 h-3 bg-border"></div>
+                  <div className="w-3 h-3 bg-border"></div>
+                  <div className="w-3 h-3 bg-border"></div>
+                  <div className="ml-4 h-6 bg-background w-1/3 border border-border"></div>
                 </div>
                 {/* Mockup Body */}
                 <div className="flex-1 p-6 grid grid-cols-3 gap-6 bg-background">
@@ -134,8 +134,6 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Decorative Blur */}
-              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-brand-500/20 blur-[120px] rounded-full"></div>
             </div>
 
           </div>

@@ -74,9 +74,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #0c4a6e 0%, #0e7490 40%, #0891b2 70%, #155e75 100%)" }}
-    >
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
       {/* Back Link */}
       <div className="p-6">
         <Link
