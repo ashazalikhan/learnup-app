@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
-import { disableAdminMode } from "@/app/actions";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export async function Navbar() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const cookieStore = await cookies();
-  const isAdminOverride = cookieStore.get("admin_override")?.value === "true";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background">
@@ -45,21 +42,14 @@ export async function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {user || isAdminOverride ? (
-              <>
-                {isAdminOverride && (
-                  <form action={disableAdminMode}>
-                    <Button variant="ghost" size="sm" type="submit" className="text-red-400 hover:text-red-300">
-                      Exit Admin Mode
-                    </Button>
-                  </form>
-                )}
-                <Link href="/dashboard">
-                  <Button variant="default" size="sm">
-                    Go to Dashboard
-                  </Button>
-                </Link>
-              </>
+            <ThemeToggle />
+            
+            {user ? (
+              <Link href="/dashboard">
+                <Button variant="default" size="sm">
+                  Go to Dashboard
+                </Button>
+              </Link>
             ) : (
               <>
                 <Link href="/login">

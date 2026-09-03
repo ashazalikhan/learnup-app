@@ -11,15 +11,76 @@
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* shadcn core tokens — strict slate SaaS aesthetic */
+  /* shadcn core tokens — strict slate Light Mode */
+  --background: #ffffff;
+  --foreground: #020617;
+  --card: #f8fafc;
+  --card-foreground: #020617;
+  --popover: #ffffff;
+  --popover-foreground: #020617;
+  --primary: #0f172a;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0f172a;
+
+  /* Learnup extended tokens */
+  --background-secondary: #f8fafc;
+  --surface: #ffffff;
+  --surface-secondary: #f1f5f9;
+  --surface-hover: #e2e8f0;
+
+  --brand-400: #94a3b8;
+  --brand-500: #64748b;
+  --brand-600: #475569;
+  --brand-700: #334155;
+
+  --accent-green: #10b981;
+  --energy: #f59e0b;
+
+  --text-primary: #020617;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --gradient-cta: none;
+
+  --radius: 0rem;
+
+  /* Chart colors */
+  --chart-1: #06b6d4;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #ef4444;
+
+  /* Sidebar */
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #020617;
+  --sidebar-primary: #0f172a;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #020617;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #0f172a;
+}
+
+.dark {
+  /* shadcn core tokens — strict slate Dark Mode */
   --background: #020617; /* slate-950 */
   --foreground: #f8fafc; /* slate-50 */
   --card: #0f172a; /* slate-900 */
   --card-foreground: #f8fafc;
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  --primary: #cbd5e1; /* slate-300 */
-  --primary-foreground: #0f172a; /* slate-900 */
+  --primary: #f8fafc; /* slate-50 (high contrast text) */
+  --primary-foreground: #020617; /* slate-950 */
   --secondary: #1e293b; /* slate-800 */
   --secondary-foreground: #f8fafc;
   --muted: #1e293b;
@@ -50,7 +111,6 @@
   --text-muted: #64748b;
 
   --gradient-cta: none;
-
   --radius: 0rem;
 
   /* Chart colors */
@@ -63,7 +123,7 @@
   /* Sidebar */
   --sidebar: #020617;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #cbd5e1;
+  --sidebar-primary: #f8fafc;
   --sidebar-primary-foreground: #020617;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
