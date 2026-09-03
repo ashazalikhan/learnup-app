@@ -48,7 +48,20 @@ const socialProviders = [
 export default function LoginPage() {
   const [tab, setTab] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const supabase = createClient();
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email === "admin" && password === "admin") {
+      setIsLoading("admin");
+      // Call the server action directly
+      await enableAdminMode();
+    } else {
+      alert("Invalid credentials. Try admin / admin to bypass.");
+    }
+  };
 
   const handleOAuth = async (provider: "google" | "github") => {
     setIsLoading(provider);
@@ -133,18 +146,6 @@ export default function LoginPage() {
                 ))}
               </div>
 
-              {/* Admin Bypass */}
-              <div className="pt-2">
-                <form action={enableAdminMode}>
-                  <button
-                    type="submit"
-                    className="w-full flex items-center justify-center gap-3 h-11 rounded-lg bg-surface-secondary/50 border border-border/50 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-hover hover:border-border-hover transition-colors cursor-pointer"
-                  >
-                    Enter as Admin (Bypass Login)
-                  </button>
-                </form>
-              </div>
-
               {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-border" />
@@ -155,25 +156,27 @@ export default function LoginPage() {
               </div>
 
               {/* Email Form */}
-              <div className="space-y-4">
+              <form className="space-y-4" onSubmit={handleEmailAuth}>
                 <Input
                   type="email"
-                  placeholder="Email Address"
+                  placeholder="Email Address (or 'admin')"
                   className="w-full"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
 
-                {tab === "register" && (
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full"
-                  />
-                )}
+                <Input
+                  type="password"
+                  placeholder="Password (or 'admin')"
+                  className="w-full"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
 
-                <Button variant="default" size="lg" className="w-full">
-                  Continue
+                <Button variant="default" size="lg" className="w-full" type="submit" disabled={isLoading === "admin"}>
+                  {isLoading === "admin" ? <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> : "Continue"}
                 </Button>
-              </div>
+              </form>
 
               {/* Terms */}
               <p className="text-xs text-text-muted text-center leading-relaxed">
