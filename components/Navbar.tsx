@@ -17,7 +17,7 @@ export async function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 transition-transform duration-150 ease-[var(--ease-out)] active:scale-[0.97]">
             <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
               <svg
                 width="18"
@@ -42,7 +42,6 @@ export async function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             <NavLink href="#features">Features</NavLink>
             <NavLink href="#topics">Topics</NavLink>
-            <NavLink href="#pricing">Pricing</NavLink>
           </div>
 
           {/* Actions */}
@@ -93,7 +92,7 @@ function NavLink({
   return (
     <a
       href={href}
-      className="px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors rounded-lg"
+      className="px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors duration-150 ease-[var(--ease-out)] rounded-lg"
     >
       {children}
     </a>

@@ -69,6 +69,10 @@
   --sidebar-accent-foreground: #020617;
   --sidebar-border: #e2e8f0;
   --sidebar-ring: #0f172a;
+
+  /* Motion Primitives (Emil Kowalski's skills) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .dark {
@@ -236,4 +240,46 @@
 ::selection {
   background: var(--brand-600);
   color: #ffffff;
+}
+
+/* ── Motion Primitives ──────────────────────────────────────── */
+
+@keyframes enter-fade-scale {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.95) translateY(10px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-enter {
+  animation: enter-fade-scale 300ms var(--ease-out) forwards;
+  opacity: 0; /* Hidden before start */
+}
+
+/* Stagger utilities */
+.delay-50 { animation-delay: 50ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+
+/* Reduced motion override */
+@media (prefers-reduced-motion: reduce) {
+  .animate-enter {
+    animation: fade-in 300ms ease forwards;
+  }
+  
+  /* Disable active scale effect */
+  * {
+    --tw-scale-x: 1 !important;
+    --tw-scale-y: 1 !important;
+  }
 }
