@@ -278,6 +278,10 @@
     animation: fade-in 300ms ease forwards;
   }
   
+  .animate-ticker {
+    animation: none;
+  }
+  
   /* Disable active scale effect */
   * {
     --tw-scale-x: 1 !important;
