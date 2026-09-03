@@ -158,7 +158,7 @@ export default function LoginPage() {
               {/* Email Form */}
               <form className="space-y-4" onSubmit={handleEmailAuth}>
                 <Input
-                  type="email"
+                  type="text"
                   placeholder="Email Address (or 'admin')"
                   className="w-full"
                   value={email}
