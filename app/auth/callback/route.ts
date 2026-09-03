@@ -33,7 +33,10 @@ export async function GET(request: Request) {
     );
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      // Prevent open redirect: ensure `next` is a same-origin relative path
+      const isRelativePath = next.startsWith("/") && !next.startsWith("//");
+      const safeNext = isRelativePath ? next : "/dashboard";
+      return NextResponse.redirect(`${origin}${safeNext}`);
     }
   }
 
