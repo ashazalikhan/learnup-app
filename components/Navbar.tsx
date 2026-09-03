@@ -38,8 +38,6 @@ export async function Navbar() {
 
           {/* Navigation links */}
           <div className="hidden md:flex items-center gap-1">
-            <NavLink href="#features">Features</NavLink>
-            <NavLink href="#topics">Topics</NavLink>
           </div>
 
           {/* Actions */}
