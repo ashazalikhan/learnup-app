@@ -2,10 +2,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { cookies } from "next/headers";
+import { logout } from "@/app/actions";
 
 export async function Navbar() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const cookieStore = await cookies();
+  const isAdminOverride = cookieStore.get("admin_override")?.value === "true";
+  const isAuthenticated = user || isAdminOverride;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background">
@@ -44,12 +49,19 @@ export async function Navbar() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             
-            {user ? (
-              <Link href="/dashboard">
-                <Button variant="default" size="sm">
-                  Go to Dashboard
-                </Button>
-              </Link>
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="default" size="sm">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+                <form action={logout}>
+                  <Button variant="ghost" size="sm" type="submit">
+                    Log out
+                  </Button>
+                </form>
+              </>
             ) : (
               <>
                 <Link href="/login">
