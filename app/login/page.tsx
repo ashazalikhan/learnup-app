@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/client";
 
 /* ── Social Providers ──────────────────────────────────────── */
 
@@ -45,6 +46,18 @@ const socialProviders = [
 
 export default function LoginPage() {
   const [tab, setTab] = useState<"login" | "register">("login");
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const supabase = createClient();
+
+  const handleOAuth = async (provider: "google" | "github") => {
+    setIsLoading(provider);
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden"
@@ -105,9 +118,15 @@ export default function LoginPage() {
                 {socialProviders.map((provider) => (
                   <button
                     key={provider.name}
-                    className="w-full flex items-center justify-center gap-3 h-11 rounded-lg bg-surface-secondary border border-border text-sm font-medium text-text-primary hover:bg-surface-hover hover:border-border-hover transition-colors cursor-pointer"
+                    onClick={() => handleOAuth(provider.name.toLowerCase() as "google" | "github")}
+                    disabled={!!isLoading}
+                    className="w-full flex items-center justify-center gap-3 h-11 rounded-lg bg-surface-secondary border border-border text-sm font-medium text-text-primary hover:bg-surface-hover hover:border-border-hover transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {provider.icon}
+                    {isLoading === provider.name.toLowerCase() ? (
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    ) : (
+                      provider.icon
+                    )}
                     Continue with {provider.name}
                   </button>
                 ))}
