@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +51,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const router = useRouter();
   const supabase = createClient();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -72,7 +74,7 @@ export default function LoginPage() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      window.location.href = "/dashboard";
+      router.replace("/dashboard");
     }
     
     setIsLoading(null);
