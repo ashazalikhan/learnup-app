@@ -8,9 +8,7 @@ import { logout } from "@/app/actions";
 export async function Navbar() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const cookieStore = await cookies();
-  const isAdminOverride = cookieStore.get("admin_override")?.value === "true";
-  const isAuthenticated = user || isAdminOverride;
+  const isAuthenticated = !!user;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background">

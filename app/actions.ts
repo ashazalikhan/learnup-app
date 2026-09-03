@@ -13,8 +13,6 @@ export async function logout() {
 }
 
 export async function enableAdminMode() {
-  const cookieStore = await cookies();
-  cookieStore.set("admin_override", "true", { path: "/" });
   redirect("/dashboard");
 }
 

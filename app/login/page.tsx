@@ -58,7 +58,7 @@ export default function LoginPage() {
     setErrorMsg("");
 
     // Admin bypass (hidden from users)
-    if (email === "admin" && password === "admin") {
+    if (email === "admin@admin.com" && password === "admin") {
       setIsLoading("admin");
       await enableAdminMode();
       return;

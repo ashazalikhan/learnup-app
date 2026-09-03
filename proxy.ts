@@ -35,11 +35,10 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdminOverride = request.cookies.get("admin_override")?.value === "true";
   const isAuthPage = request.nextUrl.pathname.startsWith('/login');
   const isProtectedPage = request.nextUrl.pathname.startsWith('/dashboard');
 
-  if (!user && !isAdminOverride && isProtectedPage) {
+  if (!user && isProtectedPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     const redirectResponse = NextResponse.redirect(url);
@@ -49,7 +48,7 @@ export async function proxy(request: NextRequest) {
     return redirectResponse;
   }
 
-  if ((user || isAdminOverride) && isAuthPage) {
+  if (user && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     const redirectResponse = NextResponse.redirect(url);
