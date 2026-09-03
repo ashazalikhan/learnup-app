@@ -11,6 +11,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
+  color-scheme: light;
   /* shadcn core tokens — strict slate Light Mode */
   --background: #ffffff;
   --foreground: #020617;
@@ -76,6 +77,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   /* shadcn core tokens — strict slate Dark Mode */
   --background: #020617; /* slate-950 */
   --foreground: #f8fafc; /* slate-50 */
@@ -207,7 +209,6 @@
   }
   html {
     @apply font-sans;
-    color-scheme: dark;
   }
 }
 
