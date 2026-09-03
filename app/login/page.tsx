@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { enableAdminMode } from "@/app/actions";
 
 /* ── Social Providers ──────────────────────────────────────── */
 
@@ -130,6 +131,18 @@ export default function LoginPage() {
                     Continue with {provider.name}
                   </button>
                 ))}
+              </div>
+
+              {/* Admin Bypass */}
+              <div className="pt-2">
+                <form action={enableAdminMode}>
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-3 h-11 rounded-lg bg-surface-secondary/50 border border-border/50 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-hover hover:border-border-hover transition-colors cursor-pointer"
+                  >
+                    Enter as Admin (Bypass Login)
+                  </button>
+                </form>
               </div>
 
               {/* Divider */}
