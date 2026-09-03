@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { TechTicker } from "@/components/TechTicker";
 
@@ -88,10 +88,10 @@ export default function Home() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="cta" size="xl">
+                <Button variant="default" size="lg" className="px-8 py-6 text-lg">
                   Get Started
                 </Button>
-                <Button variant="outline" size="xl">
+                <Button variant="outline" size="lg" className="px-8 py-6 text-lg">
                   I Already Have an Account
                 </Button>
               </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   return (
@@ -40,7 +40,7 @@ export function Navbar() {
             <Button variant="ghost" size="sm">
               Log in
             </Button>
-            <Button variant="primary" size="sm">
+            <Button variant="default" size="sm">
               Start Learning
             </Button>
           </div>

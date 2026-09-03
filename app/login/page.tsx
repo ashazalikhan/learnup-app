@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /* ── Social Providers ──────────────────────────────────────── */
 
@@ -126,30 +127,18 @@ export default function LoginPage() {
                 <Input
                   type="email"
                   placeholder="Email Address"
-                  fullWidth
-                  leftIcon={
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                      <polyline points="22,6 12,13 2,6" />
-                    </svg>
-                  }
+                  className="w-full"
                 />
 
                 {tab === "register" && (
                   <Input
                     type="password"
                     placeholder="Password"
-                    fullWidth
-                    leftIcon={
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0110 0v4" />
-                      </svg>
-                    }
+                    className="w-full"
                   />
                 )}
 
-                <Button variant="cta" size="lg" fullWidth>
+                <Button variant="default" size="lg" className="w-full">
                   Continue
                 </Button>
               </div>
