@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cookies } from "next/headers";
@@ -46,10 +46,8 @@ export async function Navbar() {
             
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard">
-                  <Button variant="default" size="sm">
-                    Go to Dashboard
-                  </Button>
+                <Link href="/dashboard" className={buttonVariants({ variant: "default", size: "sm" })}>
+                  Go to Dashboard
                 </Link>
                 <form action={logout}>
                   <Button variant="ghost" size="sm" type="submit">
@@ -59,15 +57,11 @@ export async function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    Log in
-                  </Button>
+                <Link href="/login" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+                  Log in
                 </Link>
-                <Link href="/login">
-                  <Button variant="default" size="sm">
-                    Start Learning
-                  </Button>
+                <Link href="/login" className={buttonVariants({ variant: "default", size: "sm" })}>
+                  Start Learning
                 </Link>
               </>
             )}

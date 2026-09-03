@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { TechTicker } from "@/components/TechTicker";
@@ -24,15 +24,11 @@ export default function Home() {
             </h1>
             
             <div className="flex flex-col gap-4 w-full sm:w-80">
-              <Link href="/register" className="w-full">
-                <Button variant="default" size="lg" className="w-full font-bold h-14 uppercase tracking-wide text-sm bg-brand-500 hover:bg-brand-600 text-white border-0">
-                  Get Started
-                </Button>
+              <Link href="/register" className={buttonVariants({ variant: "default", size: "lg", className: "w-full font-bold h-14 uppercase tracking-wide text-sm bg-brand-500 hover:bg-brand-600 text-white border-0" })}>
+                Get Started
               </Link>
-              <Link href="/login" className="w-full">
-                <Button variant="outline" size="lg" className="w-full font-bold h-14 uppercase tracking-wide text-sm border-2 border-border hover:bg-surface-secondary text-foreground">
-                  I already have an account
-                </Button>
+              <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full font-bold h-14 uppercase tracking-wide text-sm border-2 border-border hover:bg-surface-secondary text-foreground" })}>
+                I already have an account
               </Link>
             </div>
           </div>
