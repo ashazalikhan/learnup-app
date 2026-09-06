@@ -52,7 +52,7 @@
 
   --gradient-cta: none;
 
-  --radius: 0rem;
+  --radius: 0.75rem;
 
   /* Chart colors */
   --chart-1: #06b6d4;
@@ -117,7 +117,7 @@
   --text-muted: #64748b;
 
   --gradient-cta: none;
-  --radius: 0rem;
+  --radius: 0.75rem;
 
   /* Chart colors */
   --chart-1: #06b6d4;
@@ -239,8 +239,8 @@
 }
 
 ::selection {
-  background: var(--brand-600);
-  color: #ffffff;
+  background: color-mix(in srgb, var(--accent-green) 35%, transparent);
+  color: var(--foreground);
 }
 
 /* ── Motion Primitives ──────────────────────────────────────── */

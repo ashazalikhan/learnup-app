@@ -24,7 +24,11 @@ export async function proxy(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              path: options?.path ?? "/",
+              sameSite: options?.sameSite ?? "lax",
+            })
           );
         },
       },
@@ -35,8 +39,9 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login');
-  const isProtectedPage = request.nextUrl.pathname.startsWith('/dashboard');
+  const path = request.nextUrl.pathname;
+  const isAuthPage = path.startsWith("/login") || path.startsWith("/register");
+  const isProtectedPage = path.startsWith("/dashboard");
 
   if (!user && isProtectedPage) {
     const url = request.nextUrl.clone();

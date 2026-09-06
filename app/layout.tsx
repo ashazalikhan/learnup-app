@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { IdleLogout } from "@/components/IdleLogout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,8 +20,6 @@ export const metadata: Metadata = {
     "Master Data Structures & Algorithms with bite-sized lessons, real coding challenges, and a gamified experience built for college students.",
 };
 
-import { ThemeProvider } from "@/components/theme-provider";
-
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -34,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
+          <IdleLogout />
           {children}
         </ThemeProvider>
       </body>
