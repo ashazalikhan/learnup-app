@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/Navbar";
 import { createClient } from "@/lib/supabase/server";
 import { ensureProfile } from "@/lib/profiles";
@@ -67,14 +68,17 @@ export default async function DashboardPage() {
                 Arrays
               </h2>
               <p className="text-text-secondary max-w-md mb-6 leading-relaxed">
-                Indexing, traversal, and in-place tricks. Editor and lessons land in the next phase — this card is the path you will resume.
+                Indexing, traversal, and in-place tricks. Start with reversing an array in the in-browser editor.
               </p>
               <Progress value={0} className="mb-8 max-w-sm">
                 <span className="text-xs font-bold text-text-muted">0 / 12 lessons</span>
               </Progress>
-              <Button size="lg" variant="cta" className="w-fit px-8 h-12" disabled>
-                Coming next: lessons
-              </Button>
+              <Link
+                href="/learn/arrays/reverse-an-array"
+                className={cn(buttonVariants({ variant: "cta", size: "lg" }), "w-fit px-8 h-12")}
+              >
+                Start: Reverse an Array
+              </Link>
             </div>
 
             <div className="space-y-5">
@@ -87,13 +91,19 @@ export default async function DashboardPage() {
                     Warm-up
                   </span>
                 </div>
-                <p className="text-sm text-foreground font-bold mb-1">Reverse a string in place</p>
+                <p className="text-sm text-foreground font-bold mb-1">Reverse an array</p>
                 <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                  Array of characters. No extra buffer. Same idea as the Arrays unit.
+                  Read n integers, print them reversed. Same unit as Arrays — good warm-up.
                 </p>
-                <Button variant="outline" className="w-full h-10 text-xs" disabled>
-                  Unlocks with the editor
-                </Button>
+                <Link
+                  href="/learn/arrays/reverse-an-array"
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "w-full h-10 text-xs inline-flex"
+                  )}
+                >
+                  Open lesson
+                </Link>
               </div>
 
               <div className="rounded-2xl border-2 border-border bg-surface p-5 shadow-[0_4px_0_var(--border)]">
