@@ -1,23 +1,9 @@
-let stdinData = "";
-
 self.onmessage = (event) => {
-  const { id, source, stdin, timeoutMs } = event.data;
+  const { id, source, stdin } = event.data;
 
-  stdinData = stdin ?? "";
+  const stdinData = stdin ?? "";
   let stdout = "";
   let stderr = "";
-  let timedOut = false;
-
-  const timer = setTimeout(() => {
-    timedOut = true;
-    self.postMessage({
-      id,
-      stdout,
-      stderr: stderr || "Execution timed out.",
-      exitCode: null,
-      timedOut: true,
-    });
-  }, timeoutMs ?? 5000);
 
   try {
     const sandbox = {
@@ -51,22 +37,20 @@ self.onmessage = (event) => {
 
     fn(sandbox.console, sandbox.require, sandbox.setTimeout, sandbox.clearTimeout);
 
-    clearTimeout(timer);
     self.postMessage({
       id,
       stdout,
       stderr,
-      exitCode: timedOut ? null : 0,
-      timedOut,
+      exitCode: 0,
+      timedOut: false,
     });
   } catch (err) {
-    clearTimeout(timer);
     self.postMessage({
       id,
       stdout,
       stderr: err instanceof Error ? err.message : String(err),
       exitCode: 1,
-      timedOut,
+      timedOut: false,
     });
   }
 };

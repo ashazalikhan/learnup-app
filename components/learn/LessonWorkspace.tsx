@@ -12,7 +12,10 @@ import {
   submitLessonAttempt,
 } from "@/app/actions/lesson";
 import { compareStdout } from "@/lib/execution/compare";
-import { runJavaScriptInWorker, runPythonInPyodide } from "@/lib/execution/client-run";
+import {
+  runJavaScriptClient,
+  runPythonInPyodide,
+} from "@/lib/execution/client-run";
 import type { ExecutionResult, TestCaseResult } from "@/lib/execution/types";
 import {
   LANGUAGE_LABELS,
@@ -126,7 +129,8 @@ function OutputPanel({
       {runnerUnavailable ? (
         <div className="rounded-lg border-2 border-energy/40 bg-energy/10 p-3 text-energy leading-relaxed">
           Code runner unavailable — your lab network may block the remote compiler.
-          JavaScript still runs locally; Python can fall back to Pyodide after a failed remote run.
+          JavaScript falls back to the server runner when the local worker is blocked; Python can
+          use Pyodide after a failed remote run.
         </div>
       ) : null}
 
@@ -226,7 +230,12 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
   const runLocally = useCallback(
     async (stdin: string): Promise<ExecutionResult> => {
       if (language === "javascript") {
-        return runJavaScriptInWorker(source, stdin);
+        const result = await runJavaScriptClient(source, stdin, async ({ source: code, stdin: inData }) => {
+          setRunnerUnavailable(true);
+          return executeWithPistonAction({ source: code, language: "javascript", stdin: inData });
+        });
+        if (result.runnerUnavailable) setRunnerUnavailable(true);
+        return result;
       }
 
       if (language === "python") {
@@ -235,7 +244,9 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
           return piston;
         }
         setRunnerUnavailable(true);
-        return runPythonInPyodide(source, stdin);
+        const pyodide = await runPythonInPyodide(source, stdin);
+        if (pyodide.runnerUnavailable) setRunnerUnavailable(true);
+        return pyodide;
       }
 
       return executeCodeAction({ source, language, stdin });
@@ -267,10 +278,23 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
 
     try {
       if (language === "javascript") {
+        let usedPistonFallback = false;
         const results: TestCaseResult[] = [];
         for (let index = 0; index < lesson.fixtures.length; index++) {
           const fixture = lesson.fixtures[index];
-          const execution = await runJavaScriptInWorker(source, fixture.stdin);
+          const execution = await runJavaScriptClient(
+            source,
+            fixture.stdin,
+            async ({ source: code, stdin: inData }) => {
+              usedPistonFallback = true;
+              setRunnerUnavailable(true);
+              return executeWithPistonAction({
+                source: code,
+                language: "javascript",
+                stdin: inData,
+              });
+            }
+          );
           results.push({
             index,
             passed:
@@ -281,11 +305,17 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
             actualStdout: execution.stdout,
             stderr: execution.stderr,
             timedOut: execution.timedOut,
+            runnerUnavailable: execution.runnerUnavailable,
           });
         }
         setTestResults(results);
+        const allPassed = results.every((r) => r.passed);
         setStatusMessage(
-          results.every((r) => r.passed) ? "All tests passed locally." : "Some tests failed."
+          allPassed
+            ? usedPistonFallback
+              ? "All tests passed (server runner fallback)."
+              : "All tests passed locally."
+            : "Some tests failed."
         );
       } else if (language === "python") {
         const serverRun = await runLessonTestsAction({
