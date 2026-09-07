@@ -17,9 +17,11 @@ export const PISTON_LANGUAGES: Record<SupportedLanguage, PistonLanguageConfig> =
 export const DEFAULT_RUN_TIMEOUT_MS = 5000;
 
 export function getPistonApiUrl(): string {
-  return (
+  const raw =
     process.env.PISTON_API_URL ??
     process.env.NEXT_PUBLIC_PISTON_API_URL ??
-    "https://emkc.org/api/v2/piston"
-  );
+    "https://emkc.org/api/v2/piston";
+
+  // Allow either .../piston or a mistaken .../execute base from .env.
+  return raw.replace(/\/execute\/?$/, "").replace(/\/$/, "");
 }
