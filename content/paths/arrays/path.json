@@ -1,0 +1,23 @@
+{
+  "id": "arrays",
+  "title": "Arrays",
+  "unitLabel": "Unit 1 of Data Structures Fundamentals",
+  "description": "Indexing, traversal, and in-place tricks — bite-sized code labs from first element to capstone.",
+  "clusters": [
+    { "id": "indexing", "label": "Indexing" },
+    { "id": "traversal", "label": "Traversal" },
+    { "id": "in-place", "label": "In-place" }
+  ],
+  "lessons": [
+    { "slug": "what-is-an-array", "title": "What is an Array", "xp": 10, "cluster": "indexing" },
+    { "slug": "indexing", "title": "Indexing", "xp": 10, "cluster": "indexing" },
+    { "slug": "traversal", "title": "Traversal", "xp": 15, "cluster": "traversal" },
+    { "slug": "sum", "title": "Sum", "xp": 15, "cluster": "traversal" },
+    { "slug": "find-max", "title": "Find Max", "xp": 15, "cluster": "traversal" },
+    { "slug": "linear-search", "title": "Linear Search", "xp": 20, "cluster": "traversal" },
+    { "slug": "update-in-place", "title": "Update in Place", "xp": 20, "cluster": "in-place" },
+    { "slug": "reverse-an-array", "title": "Reverse an Array", "xp": 25, "cluster": "in-place" },
+    { "slug": "two-pointer-swap", "title": "Two-Pointer Swap", "xp": 20, "cluster": "in-place" },
+    { "slug": "capstone-second-largest", "title": "Second Largest", "xp": 30, "cluster": "in-place" }
+  ]
+}

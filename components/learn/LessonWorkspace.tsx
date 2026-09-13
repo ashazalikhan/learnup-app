@@ -24,11 +24,24 @@ import {
   type SupportedLanguage,
 } from "@/lib/lessons/types";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 type MobileTab = "problem" | "code" | "output";
 
+interface LessonNav {
+  path: string;
+  slug: string;
+  key: string;
+}
+
 interface LessonWorkspaceProps {
   lesson: Lesson;
+  pathTitle: string;
+  lessonNumber: number;
+  totalLessons: number;
+  prevLesson: LessonNav | null;
+  nextLesson: LessonNav | null;
+  isCompleted?: boolean;
 }
 
 function formatBlock(text: string) {
@@ -192,7 +205,15 @@ function OutputPanel({
   );
 }
 
-export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
+export function LessonWorkspace({
+  lesson,
+  pathTitle,
+  lessonNumber,
+  totalLessons,
+  prevLesson,
+  nextLesson,
+  isCompleted = false,
+}: LessonWorkspaceProps) {
   const [language, setLanguage] = useState<SupportedLanguage>("javascript");
   const [source, setSource] = useState(lesson.starters.javascript);
   const [startersByLang] = useState(lesson.starters);
@@ -203,6 +224,7 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
   const [testResults, setTestResults] = useState<TestCaseResult[] | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [runnerUnavailable, setRunnerUnavailable] = useState(false);
+  const [justPassed, setJustPassed] = useState(false);
 
   const exampleStdin = useMemo(
     () => lesson.examples[0]?.input.replace(/\\n/g, "\n") + "\n",
@@ -385,6 +407,7 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
       });
       setTestResults(result.results);
       setStatusMessage(result.message ?? (result.passed ? "Passed!" : "Not quite."));
+      if (result.passed) setJustPassed(true);
       if (result.runnerUnavailable) setRunnerUnavailable(true);
     } finally {
       setRunning(false);
@@ -432,11 +455,23 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
       <header className="border-b-2 border-border bg-card px-4 py-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-green">
-            Learn
+            {pathTitle} · Lesson {lessonNumber} of {totalLessons}
           </p>
           <p className="text-sm font-extrabold text-foreground">{lesson.title}</p>
         </div>
-        <p className="hidden sm:block text-xs text-text-muted font-mono">{lesson.key}</p>
+        <div className="flex items-center gap-3">
+          {isCompleted ? (
+            <span className="text-[10px] font-bold uppercase tracking-wide text-accent-green bg-accent-green/10 px-2 py-1 rounded-md">
+              Completed
+            </span>
+          ) : null}
+          <Link
+            href="/dashboard"
+            className="text-xs font-bold uppercase tracking-wide text-text-muted hover:text-foreground"
+          >
+            Path
+          </Link>
+        </div>
       </header>
 
       <div className="lg:hidden border-b-2 border-border bg-card px-2 py-2 flex gap-1">
@@ -508,7 +543,7 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
           ) : null}
         </div>
         {mobileTab !== "code" ? (
-          <div className="border-t-2 border-border bg-card p-2 flex flex-wrap gap-2">
+          <div className="border-t-2 border-border bg-card p-2 flex flex-wrap gap-2 items-center">
             <Button size="sm" variant="outline" onClick={handleRun} disabled={running}>
               Run
             </Button>
@@ -518,9 +553,40 @@ export function LessonWorkspace({ lesson }: LessonWorkspaceProps) {
             <Button size="sm" variant="cta" onClick={handleSubmit} disabled={running}>
               Submit
             </Button>
+            {justPassed && nextLesson ? (
+              <Link
+                href={`/learn/${nextLesson.path}/${nextLesson.slug}`}
+                className={cn(buttonVariants({ variant: "cta", size: "sm" }), "ml-auto")}
+              >
+                Next lesson
+              </Link>
+            ) : null}
           </div>
         ) : null}
       </div>
+
+      {(justPassed && nextLesson) || prevLesson ? (
+        <footer className="hidden lg:flex border-t-2 border-border bg-card px-4 py-3 items-center justify-between gap-3">
+          {prevLesson ? (
+            <Link
+              href={`/learn/${prevLesson.path}/${prevLesson.slug}`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              ← Previous
+            </Link>
+          ) : (
+            <span />
+          )}
+          {justPassed && nextLesson ? (
+            <Link
+              href={`/learn/${nextLesson.path}/${nextLesson.slug}`}
+              className={cn(buttonVariants({ variant: "cta", size: "sm" }))}
+            >
+              Next lesson →
+            </Link>
+          ) : null}
+        </footer>
+      ) : null}
     </div>
   );
 }

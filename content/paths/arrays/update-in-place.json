@@ -1,0 +1,35 @@
+{
+  "kind": "code",
+  "key": "arrays/update-in-place",
+  "path": "arrays",
+  "slug": "update-in-place",
+  "title": "Update in Place",
+  "xp": 20,
+  "cluster": "in-place",
+  "statement": "Arrays can be **modified in place** — assign a new value directly at an index.\n\nRead **n**, the array, index **i**, and value **x**. Set **a[i] = x**, then print the updated array space-separated.",
+  "ioRules": "- Line 1: **n**\n- Line 2: **n** integers\n- Line 3: **i** and **x** (space-separated)\n- Output: updated array, space-separated",
+  "examples": [
+    {
+      "input": "3\\n1 2 3\\n1 99",
+      "output": "1 99 3",
+      "explanation": "Set index 1 to 99."
+    },
+    {
+      "input": "2\\n10 20\\n0 5",
+      "output": "5 20",
+      "explanation": "Replace the first element."
+    }
+  ],
+  "fixtures": [
+    { "stdin": "3\\n1 2 3\\n1 99\\n", "expectedStdout": "1 99 3" },
+    { "stdin": "2\\n10 20\\n0 5\\n", "expectedStdout": "5 20" },
+    { "stdin": "4\\n1 2 3 4\\n3 0\\n", "expectedStdout": "1 2 3 0" }
+  ],
+  "starters": {
+    "javascript": "const fs = require(\"fs\");\n\nconst raw = fs.readFileSync(0, \"utf8\").trim();\nconst lines = raw.split(/\\n/);\nconst n = parseInt(lines[0], 10);\nconst arr = lines[1].split(/\\s+/).map(Number);\nconst [i, x] = lines[2].split(/\\s+/).map(Number);\n\n// TODO: set arr[i] = x, then print the array\n",
+    "python": "import sys\n\nlines = sys.stdin.read().strip().split(\"\\n\")\nn = int(lines[0])\narr = list(map(int, lines[1].split()))\ni, x = map(int, lines[2].split())\n\n# TODO: set arr[i] = x, then print the array\n",
+    "c": "#include <stdio.h>\n\nint main(void) {\n  int n, i, x;\n  scanf(\"%d\", &n);\n  int arr[1000];\n  for (int j = 0; j < n; j++) scanf(\"%d\", &arr[j]);\n  scanf(\"%d %d\", &i, &x);\n  // TODO: set arr[i] = x, then print the array\n  return 0;\n}\n",
+    "cpp": "#include <iostream>\n#include <vector>\n\nint main() {\n  int n, i, x;\n  std::cin >> n;\n  std::vector<int> arr(n);\n  for (int j = 0; j < n; j++) std::cin >> arr[j];\n  std::cin >> i >> x;\n  // TODO: set arr[i] = x, then print the array\n  return 0;\n}\n",
+    "java": "import java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    Scanner sc = new Scanner(System.in);\n    int n = sc.nextInt();\n    int[] arr = new int[n];\n    for (int j = 0; j < n; j++) arr[j] = sc.nextInt();\n    int i = sc.nextInt();\n    int x = sc.nextInt();\n    // TODO: set arr[i] = x, then print the array\n  }\n}\n"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "kind": "code",
+  "key": "arrays/capstone-second-largest",
+  "path": "arrays",
+  "slug": "capstone-second-largest",
+  "title": "Second Largest",
+  "xp": 30,
+  "cluster": "in-place",
+  "statement": "**Capstone:** find the **second-largest** distinct value in the array.\n\nRead **n** (n ≥ 2) and the array. Print the second-largest element. Assume all values are distinct.",
+  "ioRules": "- Line 1: **n** (2 ≤ n ≤ 1000)\n- Line 2: **n** distinct integers\n- Output: the second-largest value",
+  "examples": [
+    {
+      "input": "4\\n10 5 8 3",
+      "output": "8",
+      "explanation": "Largest is 10; second largest is 8."
+    },
+    {
+      "input": "2\\n1 2",
+      "output": "1",
+      "explanation": "With two elements, the smaller is second largest."
+    }
+  ],
+  "fixtures": [
+    { "stdin": "4\\n10 5 8 3\\n", "expectedStdout": "8" },
+    { "stdin": "2\\n1 2\\n", "expectedStdout": "1" },
+    { "stdin": "5\\n100 50 75 25 90\\n", "expectedStdout": "90" }
+  ],
+  "starters": {
+    "javascript": "const fs = require(\"fs\");\n\nconst raw = fs.readFileSync(0, \"utf8\").trim();\nconst lines = raw.split(/\\n/);\nconst n = parseInt(lines[0], 10);\nconst arr = lines[1].split(/\\s+/).map(Number);\n\n// TODO: print the second-largest element\n",
+    "python": "import sys\n\nlines = sys.stdin.read().strip().split(\"\\n\")\nn = int(lines[0])\narr = list(map(int, lines[1].split()))\n\n# TODO: print the second-largest element\n",
+    "c": "#include <stdio.h>\n\nint main(void) {\n  int n;\n  scanf(\"%d\", &n);\n  int arr[1000];\n  for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n  // TODO: print the second-largest element\n  return 0;\n}\n",
+    "cpp": "#include <iostream>\n#include <vector>\n\nint main() {\n  int n;\n  std::cin >> n;\n  std::vector<int> arr(n);\n  for (int i = 0; i < n; i++) std::cin >> arr[i];\n  // TODO: print the second-largest element\n  return 0;\n}\n",
+    "java": "import java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    Scanner sc = new Scanner(System.in);\n    int n = sc.nextInt();\n    int[] arr = new int[n];\n    for (int i = 0; i < n; i++) arr[i] = sc.nextInt();\n    // TODO: print the second-largest element\n  }\n}\n"
+  }
+}
