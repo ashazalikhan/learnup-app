@@ -1,0 +1,35 @@
+{
+  "kind": "code",
+  "key": "arrays/find-max",
+  "path": "arrays",
+  "slug": "find-max",
+  "title": "Find Max",
+  "xp": 15,
+  "cluster": "traversal",
+  "statement": "Scan the array once to find the **maximum** value.\n\nRead **n** and the array. Print the largest element.",
+  "ioRules": "- Line 1: **n** (1 ≤ n ≤ 1000)\n- Line 2: **n** integers\n- Output: the maximum value",
+  "examples": [
+    {
+      "input": "4\\n1 5 3 2",
+      "output": "5",
+      "explanation": "5 is the largest."
+    },
+    {
+      "input": "3\\n-1 -5 -2",
+      "output": "-1",
+      "explanation": "Works with negative numbers."
+    }
+  ],
+  "fixtures": [
+    { "stdin": "4\\n1 5 3 2\\n", "expectedStdout": "5" },
+    { "stdin": "3\\n-1 -5 -2\\n", "expectedStdout": "-1" },
+    { "stdin": "1\\n100\\n", "expectedStdout": "100" }
+  ],
+  "starters": {
+    "javascript": "const fs = require(\"fs\");\n\nconst raw = fs.readFileSync(0, \"utf8\").trim();\nconst lines = raw.split(/\\n/);\nconst n = parseInt(lines[0], 10);\nconst arr = lines[1].split(/\\s+/).map(Number);\n\n// TODO: print the maximum element\n",
+    "python": "import sys\n\nlines = sys.stdin.read().strip().split(\"\\n\")\nn = int(lines[0])\narr = list(map(int, lines[1].split()))\n\n# TODO: print the maximum element\n",
+    "c": "#include <stdio.h>\n\nint main(void) {\n  int n;\n  scanf(\"%d\", &n);\n  int arr[1000];\n  for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n  // TODO: print the maximum\n  return 0;\n}\n",
+    "cpp": "#include <iostream>\n#include <vector>\n\nint main() {\n  int n;\n  std::cin >> n;\n  std::vector<int> arr(n);\n  for (int i = 0; i < n; i++) std::cin >> arr[i];\n  // TODO: print the maximum\n  return 0;\n}\n",
+    "java": "import java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    Scanner sc = new Scanner(System.in);\n    int n = sc.nextInt();\n    int[] arr = new int[n];\n    for (int i = 0; i < n; i++) arr[i] = sc.nextInt();\n    // TODO: print the maximum\n  }\n}\n"
+  }
+}

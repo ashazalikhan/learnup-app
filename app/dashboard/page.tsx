@@ -1,10 +1,22 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/Navbar";
 import { createClient } from "@/lib/supabase/server";
 import { ensureProfile } from "@/lib/profiles";
 import { logout } from "@/app/actions";
-import { Progress } from "@/components/ui/progress";
+import { PathMap, type NodeState } from "@/components/dashboard/PathMap";
+import {
+  getCurrentLessonKey,
+  getOrderedLessonKeys,
+  getPath,
+} from "@/lib/curriculum/loader";
+import {
+  fetchUserLessonProgress,
+  getCompletedKeys,
+} from "@/lib/curriculum/progress";
+
+const PATH_ID = "arrays";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -14,6 +26,38 @@ export default async function DashboardPage() {
 
   const profile = user ? await ensureProfile(supabase, user) : null;
   const firstName = profile?.display_name?.split(" ")[0] ?? "there";
+
+  const path = getPath(PATH_ID)!;
+  const orderedKeys = getOrderedLessonKeys(PATH_ID);
+
+  const progress = user
+    ? await fetchUserLessonProgress(supabase, user.id)
+    : new Map();
+  const completedKeys = getCompletedKeys(progress);
+  const completedCount = path.lessons.filter((lesson) =>
+    completedKeys.has(`${PATH_ID}/${lesson.slug}`)
+  ).length;
+
+  const currentKey = getCurrentLessonKey(orderedKeys, completedKeys);
+  const [currentPath, currentSlug] = currentKey.split("/");
+  const currentLesson = path.lessons.find((l) => l.slug === currentSlug);
+  const pathComplete = completedCount === path.lessons.length;
+
+  const nodeStates: NodeState[] = path.lessons.map((lesson) => {
+    const key = `${PATH_ID}/${lesson.slug}`;
+    if (completedKeys.has(key)) return "completed";
+    if (key === currentKey) return "current";
+    return "locked";
+  });
+
+  const resumeHref = `/learn/${currentPath}/${currentSlug}`;
+  const resumeLabel = pathComplete
+    ? "Replay path"
+    : completedCount === 0
+      ? `Start: ${currentLesson?.title ?? "Lesson 1"}`
+      : `Resume: ${currentLesson?.title ?? "Lesson"}`;
+
+  const practiceHref = resumeHref;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -46,7 +90,7 @@ export default async function DashboardPage() {
                 Learn
               </Link>
               <Link
-                href="#"
+                href={practiceHref}
                 className="px-4 py-3 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-secondary font-bold text-sm transition-colors"
               >
                 Practice
@@ -59,23 +103,14 @@ export default async function DashboardPage() {
               </Link>
             </aside>
 
-            <div className="flex flex-col justify-center min-h-[420px] rounded-2xl bg-card border-2 border-border p-10 md:p-12 shadow-[0_4px_0_var(--border)]">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-green mb-3">
-                Unit 1
-              </p>
-              <h2 className="text-3xl font-extrabold text-foreground mb-3 tracking-tight">
-                Arrays
-              </h2>
-              <p className="text-text-secondary max-w-md mb-6 leading-relaxed">
-                Indexing, traversal, and in-place tricks. Editor and lessons land in the next phase — this card is the path you will resume.
-              </p>
-              <Progress value={0} className="mb-8 max-w-sm">
-                <span className="text-xs font-bold text-text-muted">0 / 12 lessons</span>
-              </Progress>
-              <Button size="lg" variant="cta" className="w-fit px-8 h-12" disabled>
-                Coming next: lessons
-              </Button>
-            </div>
+            <PathMap
+              path={path}
+              nodeStates={nodeStates}
+              completedCount={completedCount}
+              resumeHref={resumeHref}
+              resumeLabel={resumeLabel}
+              pathComplete={pathComplete}
+            />
 
             <div className="space-y-5">
               <div className="rounded-2xl border-2 border-border bg-surface p-5 shadow-[0_4px_0_var(--border)]">
@@ -87,13 +122,23 @@ export default async function DashboardPage() {
                     Warm-up
                   </span>
                 </div>
-                <p className="text-sm text-foreground font-bold mb-1">Reverse a string in place</p>
-                <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                  Array of characters. No extra buffer. Same idea as the Arrays unit.
+                <p className="text-sm text-foreground font-bold mb-1">
+                  {currentLesson?.title ?? "Arrays"}
                 </p>
-                <Button variant="outline" className="w-full h-10 text-xs" disabled>
-                  Unlocks with the editor
-                </Button>
+                <p className="text-xs text-text-secondary leading-relaxed mb-4">
+                  {pathComplete
+                    ? "You finished the Arrays path. Replay any lesson to stay sharp."
+                    : `Your next lesson in the Arrays unit.`}
+                </p>
+                <Link
+                  href={resumeHref}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "w-full h-10 text-xs inline-flex"
+                  )}
+                >
+                  Open lesson
+                </Link>
               </div>
 
               <div className="rounded-2xl border-2 border-border bg-surface p-5 shadow-[0_4px_0_var(--border)]">
