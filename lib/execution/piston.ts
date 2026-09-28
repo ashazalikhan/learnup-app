@@ -1,19 +1,21 @@
-import {
-  DEFAULT_RUN_TIMEOUT_MS,
-  getPistonApiUrl,
-  PISTON_LANGUAGES,
-} from "@/lib/execution/language-map";
+import { getPistonApiUrl, PISTON_LANGUAGES } from "@/lib/execution/language-map";
 import type { ExecuteParams, ExecutionResult } from "@/lib/execution/types";
 import type { SupportedLanguage } from "@/lib/lessons/types";
 
+const DEFAULT_RUN_TIMEOUT_MS = 30000;
+
+interface PistonRunStage {
+  stdout?: string;
+  stderr?: string;
+  code?: number | null;
+  signal?: string | null;
+  output?: string;
+  status?: string | null;
+  message?: string | null;
+}
+
 interface PistonRunResponse {
-  run?: {
-    stdout?: string;
-    stderr?: string;
-    code?: number;
-    signal?: string | null;
-    output?: string;
-  };
+  run?: PistonRunStage;
   compile?: {
     stdout?: string;
     stderr?: string;
@@ -48,7 +50,7 @@ export async function runWithPiston({
         version: config.version,
         files: [{ name: language === "java" ? "Main.java" : "main", content: source }],
         stdin,
-        run_timeout: Math.ceil(timeoutMs / 1000),
+        run_timeout: timeoutMs,
         compile_timeout: 10000,
       }),
       signal: AbortSignal.timeout(timeoutMs + 15000),
@@ -79,13 +81,14 @@ export async function runWithPiston({
     }
 
     const run = payload.run;
-    const stderr = run?.stderr || run?.output || "";
-    const timedOut = run?.signal === "SIGKILL" || run?.signal === "SIGTERM";
+    const stderr = run?.stderr ?? "";
+    const runCode = run?.code ?? null;
+    const timedOut = run?.status === "TO";
 
     return {
       stdout: run?.stdout ?? "",
       stderr,
-      exitCode: run?.code ?? (timedOut ? null : 1),
+      exitCode: runCode ?? (timedOut ? null : 1),
       timedOut,
       runnerUnavailable: timedOut && !stderr,
     };

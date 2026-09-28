@@ -5,13 +5,13 @@ export interface PistonLanguageConfig {
   version: string;
 }
 
-/** Pinned Piston runtime ids — update after checking /api/v2/piston/runtimes */
+/** Piston language ids; version "*" uses whatever runtime is installed locally. */
 export const PISTON_LANGUAGES: Record<SupportedLanguage, PistonLanguageConfig> = {
-  javascript: { language: "javascript", version: "18.15.0" },
-  python: { language: "python", version: "3.10.0" },
-  c: { language: "c", version: "10.2.0" },
-  cpp: { language: "cpp", version: "10.2.0" },
-  java: { language: "java", version: "15.0.2" },
+  javascript: { language: "javascript", version: "*" },
+  python: { language: "python", version: "*" },
+  c: { language: "c", version: "*" },
+  cpp: { language: "c++", version: "*" },
+  java: { language: "java", version: "*" },
 };
 
 export const DEFAULT_RUN_TIMEOUT_MS = 5000;
