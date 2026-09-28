@@ -1,7 +1,20 @@
 import { compareStdout } from "@/lib/execution/compare";
+import { normalizeFixtureText } from "@/lib/execution/fixture-encoding";
 import { runOnServer } from "@/lib/execution/piston";
-import type { ExecuteParams, TestCaseResult, TestRunResult } from "@/lib/execution/types";
+import type { ExecuteParams, ExecutionResult, TestCaseResult, TestRunResult } from "@/lib/execution/types";
 import type { LessonFixture } from "@/lib/lessons/types";
+
+/** Local Piston SIGKILLs under concurrent /execute; serialize all fixture runs. */
+let pistonRunChain: Promise<unknown> = Promise.resolve();
+
+function runOnServerSequentially(params: ExecuteParams): Promise<ExecutionResult> {
+  const run = pistonRunChain.then(() => runOnServer(params));
+  pistonRunChain = run.then(
+    () => undefined,
+    () => undefined
+  );
+  return run;
+}
 
 export async function runFixtures(
   params: Omit<ExecuteParams, "stdin">,
@@ -12,9 +25,11 @@ export async function runFixtures(
 
   for (let index = 0; index < fixtures.length; index++) {
     const fixture = fixtures[index];
-    const execution = await runOnServer({
+    const stdin = normalizeFixtureText(fixture.stdin);
+    const expectedStdout = normalizeFixtureText(fixture.expectedStdout);
+    const execution = await runOnServerSequentially({
       ...params,
-      stdin: fixture.stdin,
+      stdin,
     });
 
     if (execution.runnerUnavailable) {
@@ -25,12 +40,12 @@ export async function runFixtures(
       !execution.timedOut &&
       !execution.runnerUnavailable &&
       execution.exitCode === 0 &&
-      compareStdout(execution.stdout, fixture.expectedStdout);
+      compareStdout(execution.stdout, expectedStdout);
 
     results.push({
       index,
       passed,
-      expectedStdout: fixture.expectedStdout,
+      expectedStdout,
       actualStdout: execution.stdout,
       stderr: execution.stderr,
       timedOut: execution.timedOut,

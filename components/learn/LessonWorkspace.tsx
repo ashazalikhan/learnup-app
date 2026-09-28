@@ -12,6 +12,7 @@ import {
   submitLessonAttempt,
 } from "@/app/actions/lesson";
 import { compareStdout } from "@/lib/execution/compare";
+import { normalizeFixtureText } from "@/lib/execution/fixture-encoding";
 import {
   runJavaScriptClient,
   runPythonInPyodide,
@@ -44,9 +45,6 @@ interface LessonWorkspaceProps {
   isCompleted?: boolean;
 }
 
-function formatBlock(text: string) {
-  return text.replace(/\\n/g, "\n");
-}
 
 function ProblemPanel({ lesson }: { lesson: Lesson }) {
   return (
@@ -86,7 +84,7 @@ function ProblemPanel({ lesson }: { lesson: Lesson }) {
                 Input
               </p>
               <pre className="text-xs font-mono bg-surface-secondary rounded-lg p-3 overflow-x-auto">
-                {formatBlock(example.input)}
+                {normalizeFixtureText(example.input)}
               </pre>
             </div>
             <div>
@@ -94,7 +92,7 @@ function ProblemPanel({ lesson }: { lesson: Lesson }) {
                 Output
               </p>
               <pre className="text-xs font-mono bg-surface-secondary rounded-lg p-3 overflow-x-auto">
-                {example.output}
+                {normalizeFixtureText(example.output)}
               </pre>
             </div>
             {example.explanation ? (
@@ -227,7 +225,7 @@ export function LessonWorkspace({
   const [justPassed, setJustPassed] = useState(false);
 
   const exampleStdin = useMemo(
-    () => lesson.examples[0]?.input.replace(/\\n/g, "\n") + "\n",
+    () => normalizeFixtureText(lesson.examples[0]?.input ?? "") + "\n",
     [lesson.examples]
   );
 
@@ -304,9 +302,11 @@ export function LessonWorkspace({
         const results: TestCaseResult[] = [];
         for (let index = 0; index < lesson.fixtures.length; index++) {
           const fixture = lesson.fixtures[index];
+          const stdin = normalizeFixtureText(fixture.stdin);
+          const expectedStdout = normalizeFixtureText(fixture.expectedStdout);
           const execution = await runJavaScriptClient(
             source,
-            fixture.stdin,
+            stdin,
             async ({ source: code, stdin: inData }) => {
               usedPistonFallback = true;
               setRunnerUnavailable(true);
@@ -322,8 +322,8 @@ export function LessonWorkspace({
             passed:
               !execution.timedOut &&
               execution.exitCode === 0 &&
-              compareStdout(execution.stdout, fixture.expectedStdout),
-            expectedStdout: fixture.expectedStdout,
+              compareStdout(execution.stdout, expectedStdout),
+            expectedStdout,
             actualStdout: execution.stdout,
             stderr: execution.stderr,
             timedOut: execution.timedOut,
@@ -357,14 +357,16 @@ export function LessonWorkspace({
         const results: TestCaseResult[] = [];
         for (let index = 0; index < lesson.fixtures.length; index++) {
           const fixture = lesson.fixtures[index];
-          const execution = await runPythonInPyodide(source, fixture.stdin);
+          const stdin = normalizeFixtureText(fixture.stdin);
+          const expectedStdout = normalizeFixtureText(fixture.expectedStdout);
+          const execution = await runPythonInPyodide(source, stdin);
           results.push({
             index,
             passed:
               !execution.timedOut &&
               execution.exitCode === 0 &&
-              compareStdout(execution.stdout, fixture.expectedStdout),
-            expectedStdout: fixture.expectedStdout,
+              compareStdout(execution.stdout, expectedStdout),
+            expectedStdout,
             actualStdout: execution.stdout,
             stderr: execution.stderr,
             timedOut: execution.timedOut,
