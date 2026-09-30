@@ -15,6 +15,7 @@ export interface TestCaseResult {
   expectedStdout: string;
   actualStdout: string;
   stderr: string;
+  exitCode: number | null;
   timedOut: boolean;
   runnerUnavailable?: boolean;
   error?: string;

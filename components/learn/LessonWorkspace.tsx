@@ -19,6 +19,11 @@ import {
 } from "@/lib/execution/client-run";
 import type { ExecutionResult, TestCaseResult } from "@/lib/execution/types";
 import {
+  classifyTestFailure,
+  executionHasRunnerTransportFailure,
+  resultsHaveRunnerTransportFailure,
+} from "@/lib/execution/failure-reason";
+import {
   LANGUAGE_LABELS,
   SUPPORTED_LANGUAGES,
   type Lesson,
@@ -110,13 +115,13 @@ function OutputPanel({
   runResult,
   testResults,
   statusMessage,
-  runnerUnavailable,
+  showRunnerTransportWarning,
 }: {
   running: boolean;
   runResult: ExecutionResult | null;
   testResults: TestCaseResult[] | null;
   statusMessage: string | null;
-  runnerUnavailable: boolean;
+  showRunnerTransportWarning: boolean;
 }) {
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4 font-mono text-xs">
@@ -137,11 +142,9 @@ function OutputPanel({
         </p>
       ) : null}
 
-      {runnerUnavailable ? (
+      {showRunnerTransportWarning ? (
         <div className="rounded-lg border-2 border-energy/40 bg-energy/10 p-3 text-energy leading-relaxed">
-          Code runner unavailable — your lab network may block the remote compiler.
-          JavaScript falls back to the server runner when the local worker is blocked; Python can
-          use Pyodide after a failed remote run.
+          Runner unavailable — one or more tests could not be graded. Try again.
         </div>
       ) : null}
 
@@ -163,7 +166,15 @@ function OutputPanel({
             </pre>
           ) : null}
           {runResult.timedOut ? (
-            <p className="text-energy">Timed out after 5 seconds.</p>
+            <p className="text-energy">Time limit exceeded</p>
+          ) : null}
+          {runResult.runnerUnavailable && runResult.error ? (
+            <p className="text-energy leading-relaxed">
+              Runner unavailable. This run could not be completed. Try again.
+              {runResult.error ? (
+                <span className="block mt-1 text-text-secondary break-words">{runResult.error}</span>
+              ) : null}
+            </p>
           ) : null}
         </div>
       ) : null}
@@ -173,7 +184,9 @@ function OutputPanel({
           <p className="text-[10px] font-bold uppercase tracking-wide text-text-muted">
             Tests
           </p>
-          {testResults.map((result) => (
+          {testResults.map((result) => {
+            const failure = classifyTestFailure(result);
+            return (
             <div
               key={result.index}
               className={cn(
@@ -184,19 +197,29 @@ function OutputPanel({
               )}
             >
               <p className="font-bold text-foreground">
-                Test {result.index + 1}: {result.passed ? "PASS" : "FAIL"}
+                Test {result.index + 1}: {result.passed ? "PASS" : failure?.label ?? "FAIL"}
               </p>
-              {!result.passed ? (
+              {failure?.showExpectedGot ? (
                 <>
-                  <p className="text-text-muted">Expected: {result.expectedStdout}</p>
-                  <p className="text-text-muted">Got: {result.actualStdout || "(empty)"}</p>
+                  <p className="text-text-muted break-words">Expected: {result.expectedStdout}</p>
+                  <p className="text-text-muted break-words">
+                    Got: {result.actualStdout || "(empty)"}
+                  </p>
                 </>
               ) : null}
-              {result.stderr ? (
-                <pre className="whitespace-pre-wrap text-destructive">{result.stderr}</pre>
+              {failure && !failure.showExpectedGot && failure.detail ? (
+                <pre className="whitespace-pre-wrap break-words text-destructive">
+                  {failure.detail}
+                </pre>
+              ) : null}
+              {failure?.showExpectedGot && result.stderr ? (
+                <pre className="whitespace-pre-wrap break-words text-destructive">
+                  {result.stderr}
+                </pre>
               ) : null}
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -221,8 +244,14 @@ export function LessonWorkspace({
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
   const [testResults, setTestResults] = useState<TestCaseResult[] | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [runnerUnavailable, setRunnerUnavailable] = useState(false);
   const [justPassed, setJustPassed] = useState(false);
+
+  const showRunnerTransportWarning = useMemo(
+    () =>
+      resultsHaveRunnerTransportFailure(testResults) ||
+      executionHasRunnerTransportFailure(runResult),
+    [testResults, runResult]
+  );
 
   const exampleStdin = useMemo(
     () => normalizeFixtureText(lesson.examples[0]?.input ?? "") + "\n",
@@ -244,17 +273,14 @@ export function LessonWorkspace({
     setRunResult(null);
     setTestResults(null);
     setStatusMessage(null);
-    setRunnerUnavailable(false);
   };
 
   const runLocally = useCallback(
     async (stdin: string): Promise<ExecutionResult> => {
       if (language === "javascript") {
         const result = await runJavaScriptClient(source, stdin, async ({ source: code, stdin: inData }) => {
-          setRunnerUnavailable(true);
           return executeWithPistonAction({ source: code, language: "javascript", stdin: inData });
         });
-        if (result.runnerUnavailable) setRunnerUnavailable(true);
         return result;
       }
 
@@ -263,9 +289,7 @@ export function LessonWorkspace({
         if (!piston.runnerUnavailable && !piston.error) {
           return piston;
         }
-        setRunnerUnavailable(true);
         const pyodide = await runPythonInPyodide(source, stdin);
-        if (pyodide.runnerUnavailable) setRunnerUnavailable(true);
         return pyodide;
       }
 
@@ -278,12 +302,10 @@ export function LessonWorkspace({
     setRunning(true);
     setTestResults(null);
     setStatusMessage(null);
-    setRunnerUnavailable(false);
 
     try {
       const result = await runLocally(exampleStdin);
       setRunResult(result);
-      if (result.runnerUnavailable) setRunnerUnavailable(true);
     } finally {
       setRunning(false);
       setMobileTab("output");
@@ -294,7 +316,6 @@ export function LessonWorkspace({
     setRunning(true);
     setRunResult(null);
     setStatusMessage(null);
-    setRunnerUnavailable(false);
 
     try {
       if (language === "javascript") {
@@ -309,7 +330,6 @@ export function LessonWorkspace({
             stdin,
             async ({ source: code, stdin: inData }) => {
               usedPistonFallback = true;
-              setRunnerUnavailable(true);
               return executeWithPistonAction({
                 source: code,
                 language: "javascript",
@@ -326,8 +346,10 @@ export function LessonWorkspace({
             expectedStdout,
             actualStdout: execution.stdout,
             stderr: execution.stderr,
+            exitCode: execution.exitCode,
             timedOut: execution.timedOut,
             runnerUnavailable: execution.runnerUnavailable,
+            error: execution.error,
           });
         }
         setTestResults(results);
@@ -353,7 +375,6 @@ export function LessonWorkspace({
           return;
         }
 
-        setRunnerUnavailable(true);
         const results: TestCaseResult[] = [];
         for (let index = 0; index < lesson.fixtures.length; index++) {
           const fixture = lesson.fixtures[index];
@@ -369,7 +390,10 @@ export function LessonWorkspace({
             expectedStdout,
             actualStdout: execution.stdout,
             stderr: execution.stderr,
+            exitCode: execution.exitCode,
             timedOut: execution.timedOut,
+            runnerUnavailable: execution.runnerUnavailable,
+            error: execution.error,
           });
         }
         setTestResults(results);
@@ -388,7 +412,6 @@ export function LessonWorkspace({
         setStatusMessage(
           serverRun.allPassed ? "All tests passed." : "Some tests failed."
         );
-        if (serverRun.runnerUnavailable) setRunnerUnavailable(true);
       }
     } finally {
       setRunning(false);
@@ -410,7 +433,6 @@ export function LessonWorkspace({
       setTestResults(result.results);
       setStatusMessage(result.message ?? (result.passed ? "Passed!" : "Not quite."));
       if (result.passed) setJustPassed(true);
-      if (result.runnerUnavailable) setRunnerUnavailable(true);
     } finally {
       setRunning(false);
       setMobileTab("output");
@@ -516,7 +538,7 @@ export function LessonWorkspace({
                     runResult={runResult}
                     testResults={testResults}
                     statusMessage={statusMessage}
-                    runnerUnavailable={runnerUnavailable}
+                    showRunnerTransportWarning={showRunnerTransportWarning}
                   />
                 </div>
               </Panel>
@@ -540,7 +562,7 @@ export function LessonWorkspace({
               runResult={runResult}
               testResults={testResults}
               statusMessage={statusMessage}
-              runnerUnavailable={runnerUnavailable}
+              showRunnerTransportWarning={showRunnerTransportWarning}
             />
           ) : null}
         </div>
