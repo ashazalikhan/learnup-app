@@ -16,7 +16,23 @@ Learnup is a gamified coding platform tailored for college students to learn Dat
 - **Supported Languages:** C, C++, JavaScript, Python, Java
 
 ## Getting Started
-*(Instructions will be added once the project is initialized)*
+
+**Requirements:** Node.js **20+** (tested with **v24.13.0**) and npm **10+** (tested with **11.6.2**). Use the lockfile for installs—do not run `npm install` for routine setup.
+
+```bash
+git clone https://github.com/ashazalikhan/learnup-app.git
+cd learnup-app
+cp .env.example .env.local   # Windows: copy .env.example .env.local
+npm ci
+npm run dev
+```
+
+Edit `.env.local` with your Supabase URL and anon key (see `.env.example`). For production builds:
+
+```bash
+npm run build
+npm run lint
+```
 
 ### Local Piston runner
 
