@@ -48,6 +48,7 @@ export async function runFixtures(
       expectedStdout,
       actualStdout: execution.stdout,
       stderr: execution.stderr,
+      exitCode: execution.exitCode,
       timedOut: execution.timedOut,
       runnerUnavailable: execution.runnerUnavailable,
       error: execution.error,
