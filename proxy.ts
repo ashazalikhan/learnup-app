@@ -41,7 +41,8 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAuthPage = path.startsWith("/login") || path.startsWith("/register");
-  const isProtectedPage = path.startsWith("/dashboard");
+  const isProtectedPage =
+    path.startsWith("/dashboard") || path.startsWith("/join") || path.startsWith("/faculty");
 
   if (!user && isProtectedPage) {
     const url = request.nextUrl.clone();

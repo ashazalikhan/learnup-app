@@ -12,6 +12,16 @@ export async function Navbar() {
   } = await supabase.auth.getUser();
   const isAuthenticated = !!user;
 
+  let showFaculty = false;
+  if (user) {
+    const { data: grant } = await supabase
+      .from("faculty_grants")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    showFaculty = !!grant;
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-border bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -51,6 +61,17 @@ export async function Navbar() {
                 >
                   Learn
                 </Link>
+                <Link href="/join" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+                  Lab
+                </Link>
+                {showFaculty ? (
+                  <Link
+                    href="/faculty"
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}
+                  >
+                    Faculty
+                  </Link>
+                ) : null}
                 <form action={logout}>
                   <Button variant="outline" size="sm" type="submit" className="uppercase text-xs tracking-wide">
                     Log out

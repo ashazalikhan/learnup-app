@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LessonWorkspace } from "@/components/learn/LessonWorkspace";
+import { RecordLessonOpen } from "@/components/learn/RecordLessonOpen";
 import { buttonVariants } from "@/components/ui/button";
 import {
   getLesson,
@@ -95,14 +96,17 @@ export default async function LearnLessonPage({ params }: LearnLessonPageProps) 
   }
 
   return (
-    <LessonWorkspace
-      lesson={lesson}
-      pathTitle={path.title}
-      lessonNumber={lessonIndex + 1}
-      totalLessons={totalLessons}
-      prevLesson={prev}
-      nextLesson={nextUnlocked ? next : null}
-      isCompleted={completedKeys.has(lessonKey)}
-    />
+    <>
+      {user ? <RecordLessonOpen lessonKey={lessonKey} /> : null}
+      <LessonWorkspace
+        lesson={lesson}
+        pathTitle={path.title}
+        lessonNumber={lessonIndex + 1}
+        totalLessons={totalLessons}
+        prevLesson={prev}
+        nextLesson={nextUnlocked ? next : null}
+        isCompleted={completedKeys.has(lessonKey)}
+      />
+    </>
   );
 }

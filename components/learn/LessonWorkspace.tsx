@@ -31,6 +31,7 @@ import {
 } from "@/lib/lessons/types";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { LabReturnButton } from "@/components/learn/LabReturnButton";
 
 type MobileTab = "problem" | "code" | "output";
 
@@ -495,6 +496,7 @@ export function LessonWorkspace({
           >
             Path
           </Link>
+          <LabReturnButton />
         </div>
       </header>
 

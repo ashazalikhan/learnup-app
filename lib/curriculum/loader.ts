@@ -40,9 +40,13 @@ export function getLesson(pathId: string, slug: string): CurriculumLesson | null
 }
 
 export function getLessonByKey(key: string): CurriculumLesson | null {
-  const [pathId, slug] = key.split("/");
+  const parts = key.split("/");
+  if (parts.length !== 2) return null;
+  const [pathId, slug] = parts;
   if (!pathId || !slug) return null;
-  return getLesson(pathId, slug);
+  const lesson = getLesson(pathId, slug);
+  if (!lesson || lesson.key !== key) return null;
+  return lesson;
 }
 
 export function getOrderedLessonKeys(pathId: string): string[] {
