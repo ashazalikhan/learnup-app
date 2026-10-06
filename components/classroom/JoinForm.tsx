@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { unstable_rethrow } from "next/navigation";
 import { joinWithCode } from "@/app/actions/classroom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +16,14 @@ export function JoinForm() {
       action={(formData) => {
         setError(null);
         startTransition(async () => {
-          const result = await joinWithCode(formData);
-          if (result?.error) {
-            setError(result.error);
+          try {
+            const result = await joinWithCode(formData);
+            if (result?.error) {
+              setError(result.error);
+            }
+          } catch (error) {
+            unstable_rethrow(error);
+            setError("Could not join. Try again.");
           }
         });
       }}

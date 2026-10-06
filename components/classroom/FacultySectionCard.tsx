@@ -5,7 +5,7 @@ import {
   rotateJoinCodeFromForm,
   setJoinEnabledFromForm,
 } from "@/app/actions/classroom";
-import type { ClassroomActionResult } from "@/lib/classroom/action-result";
+import { actionError, type ClassroomActionResult } from "@/lib/classroom/action-result";
 import { CopyCodeButton } from "@/components/classroom/CopyCodeButton";
 import { FormFeedback } from "@/components/classroom/FormFeedback";
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,16 @@ export function FacultySectionCard({ section }: { section: SectionCard }) {
   const runForm = (formData: FormData) => {
     setResult(null);
     startTransition(async () => {
-      const action =
-        formData.get("_action") === "rotate"
-          ? rotateJoinCodeFromForm
-          : setJoinEnabledFromForm;
-      const next = await action(formData);
-      setResult(next);
+      try {
+        const action =
+          formData.get("_action") === "rotate"
+            ? rotateJoinCodeFromForm
+            : setJoinEnabledFromForm;
+        const next = await action(formData);
+        setResult(next);
+      } catch {
+        setResult(actionError("Could not complete that action. Try again."));
+      }
     });
   };
 

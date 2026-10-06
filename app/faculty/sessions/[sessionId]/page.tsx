@@ -64,7 +64,7 @@ export default async function FacultySessionPage({ params }: SessionPageProps) {
       <header>
         <p className="text-xs font-bold uppercase text-accent-green">{section.section_name}</p>
         <h1 className="text-2xl font-extrabold text-foreground">{session.title}</h1>
-        <p className="text-xs text-text-muted">Week {session.week_no} · {session.status}</p>
+        <p className="text-xs text-text-muted">Week {session.week_no}</p>
       </header>
 
       <SessionRoster

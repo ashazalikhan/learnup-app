@@ -3,7 +3,6 @@ import { Navbar } from "@/components/Navbar";
 import { JoinForm } from "@/components/classroom/JoinForm";
 import { buttonVariants } from "@/components/ui/button";
 import { getLessonByKey, getOrderedLessonKeys, isLessonUnlocked } from "@/lib/curriculum/loader";
-import { fetchUserLessonProgress, getCompletedKeys } from "@/lib/curriculum/progress";
 import {
   lessonCellStatus,
   statusLabel,
@@ -27,7 +26,6 @@ interface JoinPageProps {
 
 export default async function JoinPage({ searchParams }: JoinPageProps) {
   const { joined } = await searchParams;
-  const joinedName = joined ? decodeURIComponent(joined) : null;
 
   const supabase = await createClient();
   const {
@@ -152,8 +150,8 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
   const openedKeys = new Set(openRows.map((r) => r.lesson_key));
 
   const orderedPathKeys = getOrderedLessonKeys("arrays");
-  const progressMap = user && dataReady ? await fetchUserLessonProgress(supabase, user.id) : new Map();
-  const pathCompleted = dataReady ? getCompletedKeys(progressMap) : new Set<string>();
+  const joinedSection =
+    dataReady && joined ? (sections.find((section) => section.id === joined) ?? null) : null;
 
   const courseById = new Map(courses.map((c) => [c.id, c]));
   const institutionById = new Map(institutions.map((i) => [i.id, i]));
@@ -178,8 +176,8 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
 
           <section className="rounded-2xl border-2 border-border bg-card p-5 space-y-3">
             <h2 className="text-sm font-extrabold uppercase tracking-wide">Join with code</h2>
-            {joinedName ? (
-              <p className="text-sm text-accent-green font-bold">Joined {joinedName}</p>
+            {joinedSection ? (
+              <p className="text-sm text-accent-green font-bold">Joined {joinedSection.name}</p>
             ) : null}
             <JoinForm />
           </section>
@@ -282,7 +280,7 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
                               });
                               const unlocked = isLessonUnlocked(
                                 orderedPathKeys,
-                                pathCompleted,
+                                completedKeys,
                                 q.lesson_key
                               );
                               const prevKey =

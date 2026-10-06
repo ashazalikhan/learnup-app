@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createLabSessionFormAction } from "@/app/actions/classroom";
-import type { ClassroomActionResult } from "@/lib/classroom/action-result";
+import { actionError, type ClassroomActionResult } from "@/lib/classroom/action-result";
 import { ARRAYS_LESSON_ALLOWLIST } from "@/lib/classroom/allowlist";
 import { FormFeedback } from "@/components/classroom/FormFeedback";
 import { getLessonByKey } from "@/lib/curriculum/loader";
@@ -21,8 +21,12 @@ export function CreateLabSessionForm({ sectionId }: { sectionId: string }) {
         const formData = new FormData(event.currentTarget);
         setResult(null);
         startTransition(async () => {
-          const next = await createLabSessionFormAction(sectionId, formData);
-          setResult(next);
+          try {
+            const next = await createLabSessionFormAction(sectionId, formData);
+            setResult(next);
+          } catch {
+            setResult(actionError("Could not complete that action. Try again."));
+          }
         });
       }}
     >

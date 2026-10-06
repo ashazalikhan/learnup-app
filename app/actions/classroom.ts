@@ -29,18 +29,8 @@ export async function joinWithCode(formData: FormData): Promise<{ error?: string
     return { error: "That code didn't work." };
   }
 
-  const { data: section, error: sectionError } = await supabase
-    .from("sections")
-    .select("name")
-    .eq("id", sectionId)
-    .maybeSingle();
-
-  if (sectionError || !section?.name) {
-    return { error: "That code didn't work." };
-  }
-
   revalidatePath("/join");
-  redirect(`/join?joined=${encodeURIComponent(section.name)}`);
+  redirect(`/join?joined=${sectionId}`);
 }
 
 export async function createSectionAction(formData: FormData): Promise<ClassroomActionResult> {

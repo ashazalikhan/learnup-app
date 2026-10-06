@@ -14,6 +14,7 @@ begin;
 create or replace function pg_temp.proof_impersonate(p_user uuid)
 returns void
 language plpgsql
+security invoker
 as $imp$
 begin
   perform set_config('request.jwt.claim.sub', p_user::text, true);
@@ -32,6 +33,7 @@ $imp$;
 create or replace function pg_temp.proof_clear()
 returns void
 language plpgsql
+security invoker
 as $clr$
 begin
   reset role;
@@ -48,6 +50,7 @@ create or replace function pg_temp.proof_assert_msg(
 )
 returns void
 language plpgsql
+security invoker
 as $assert$
 begin
   if p_sqlstate is null or p_sqlerrm is null then
@@ -58,6 +61,14 @@ begin
   end if;
 end;
 $assert$;
+
+revoke all on function pg_temp.proof_impersonate(uuid) from public;
+revoke all on function pg_temp.proof_clear() from public;
+revoke all on function pg_temp.proof_assert_msg(text, text, text, text) from public;
+grant usage on schema pg_temp to authenticated;
+grant execute on function pg_temp.proof_impersonate(uuid) to authenticated;
+grant execute on function pg_temp.proof_clear() to authenticated;
+grant execute on function pg_temp.proof_assert_msg(text, text, text, text) to authenticated;
 
 do $proof$
 declare
@@ -125,12 +136,13 @@ begin
 
   foreach v_tbl in array v_tables loop
     foreach v_priv in array v_privs loop
+      if has_table_privilege('anon', 'public.' || v_tbl, v_priv) then
+        raise exception 'anon must not have % on %', v_priv, v_tbl;
+      end if;
+
       if v_priv = 'SELECT' then
         if not has_table_privilege('authenticated', 'public.' || v_tbl, v_priv) then
           raise exception 'authenticated missing % on %', v_priv, v_tbl;
-        end if;
-        if has_table_privilege('anon', 'public.' || v_tbl, v_priv) then
-          raise exception 'anon must not have % on %', v_priv, v_tbl;
         end if;
       elsif v_tbl = 'lesson_opens' and v_priv in ('INSERT', 'UPDATE') then
         if not has_table_privilege('authenticated', 'public.lesson_opens', v_priv) then
@@ -139,9 +151,6 @@ begin
       elsif v_priv in ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE') then
         if has_table_privilege('authenticated', 'public.' || v_tbl, v_priv) then
           raise exception 'authenticated must not have % on %', v_priv, v_tbl;
-        end if;
-        if has_table_privilege('anon', 'public.' || v_tbl, v_priv) then
-          raise exception 'anon must not have % on %', v_priv, v_tbl;
         end if;
       end if;
     end loop;
@@ -456,29 +465,86 @@ begin
   perform pg_temp.proof_clear();
 
   -- roster status precedences (owner fixtures, rollback-only transaction)
+  delete from public.lesson_attempts as la
+  where la.user_id = v_s
+    and la.lesson_key in (
+      'arrays/linear-search',
+      'arrays/update-in-place',
+      'arrays/reverse-an-array',
+      'arrays/two-pointer-swap'
+    );
+  delete from public.user_lesson_progress as ulp
+  where ulp.user_id = v_s
+    and ulp.lesson_key in (
+      'arrays/linear-search',
+      'arrays/update-in-place',
+      'arrays/reverse-an-array',
+      'arrays/two-pointer-swap'
+    );
+  delete from public.lesson_opens as lo
+  where lo.user_id = v_s
+    and lo.lesson_key in (
+      'arrays/linear-search',
+      'arrays/update-in-place',
+      'arrays/reverse-an-array',
+      'arrays/two-pointer-swap'
+    );
+
   perform pg_temp.proof_impersonate(v_a);
   v_session_status := public.create_lab_session(
     v_section_a, 3, 'Status Session', now(),
     array['arrays/linear-search', 'arrays/update-in-place', 'arrays/reverse-an-array', 'arrays/two-pointer-swap']
   );
   perform pg_temp.proof_clear();
-  insert into public.lesson_opens (user_id, lesson_key) values (v_s, 'arrays/update-in-place')
-  on conflict do nothing;
+
+  -- not_started: arrays/linear-search has no opens, progress, or attempts
+  insert into public.lesson_opens (user_id, lesson_key)
+  values (v_s, 'arrays/update-in-place');
   insert into public.user_lesson_progress (user_id, lesson_key, status, attempts, updated_at)
-  values (v_s, 'arrays/reverse-an-array', 'in_progress', 1, now())
-  on conflict (user_id, lesson_key) do update set status = excluded.status;
-  insert into public.user_lesson_progress (user_id, lesson_key, status, attempts, updated_at)
-  values (v_s, 'arrays/two-pointer-swap', 'completed', 1, now())
-  on conflict (user_id, lesson_key) do update set status = excluded.status;
+  values (v_s, 'arrays/reverse-an-array', 'in_progress', 1, now());
+  insert into public.lesson_attempts (user_id, lesson_key, language, passed)
+  values (v_s, 'arrays/two-pointer-swap', 'javascript', true);
 
   perform pg_temp.proof_impersonate(v_a);
+  select count(*) into v_cnt
+  from public.session_roster(v_session_status) as r
+  where r.user_id = v_s;
+  if v_cnt is distinct from 1 then
+    raise exception 'status roster missing S';
+  end if;
+
+  select r.questions into v_questions
+  from public.session_roster(v_session_status) as r
+  where r.user_id = v_s;
+  if v_questions is null
+    or jsonb_typeof(v_questions) is distinct from 'array'
+    or jsonb_array_length(v_questions) is distinct from 4 then
+    raise exception 'status question count';
+  end if;
+
   select jsonb_object_agg(elem->>'lesson_key', elem->>'status') into v_questions
   from public.session_roster(v_session_status) as r,
-  lateral jsonb_array_elements(r.questions) as elem;
-  if v_questions->>'arrays/linear-search' <> 'not_started' then raise exception 'status not_started'; end if;
-  if v_questions->>'arrays/update-in-place' <> 'opened' then raise exception 'status opened'; end if;
-  if v_questions->>'arrays/reverse-an-array' <> 'submitted' then raise exception 'status submitted'; end if;
-  if v_questions->>'arrays/two-pointer-swap' <> 'passed' then raise exception 'status passed'; end if;
+  lateral jsonb_array_elements(r.questions) as elem
+  where r.user_id = v_s;
+  if v_questions is null then
+    raise exception 'status key count';
+  end if;
+  select count(*) into v_cnt from jsonb_object_keys(v_questions);
+  if v_cnt is distinct from 4 then
+    raise exception 'status key count';
+  end if;
+  if v_questions->>'arrays/linear-search' is distinct from 'not_started' then
+    raise exception 'status not_started';
+  end if;
+  if v_questions->>'arrays/update-in-place' is distinct from 'opened' then
+    raise exception 'status opened';
+  end if;
+  if v_questions->>'arrays/reverse-an-array' is distinct from 'submitted' then
+    raise exception 'status submitted';
+  end if;
+  if v_questions->>'arrays/two-pointer-swap' is distinct from 'passed' then
+    raise exception 'status passed';
+  end if;
   perform pg_temp.proof_clear();
 
   -- institution reuse (proof-only name, not DEMO College)

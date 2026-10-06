@@ -24,10 +24,11 @@ export function SessionRoster({
   const [sessionStatus, setSessionStatus] = useState(initialStatus);
   const [sessionTitle, setSessionTitle] = useState(initialTitle);
   const inFlight = useRef(false);
-  const activeSessionId = useRef(sessionId);
+  const activeSessionId = useRef("");
   const requestSeq = useRef(0);
 
   const refresh = useCallback(async () => {
+    if (activeSessionId.current !== sessionId) return;
     if (inFlight.current) return;
     inFlight.current = true;
     const seq = ++requestSeq.current;
@@ -55,14 +56,18 @@ export function SessionRoster({
         setError("Could not load roster.");
       }
     } finally {
-      inFlight.current = false;
-      if (seq === requestSeq.current) {
+      if (seq === requestSeq.current && activeSessionId.current === sessionId) {
+        inFlight.current = false;
         setLoading(false);
       }
     }
   }, [sessionId]);
 
   useEffect(() => {
+    activeSessionId.current = sessionId;
+    requestSeq.current += 1;
+    inFlight.current = false;
+
     /* eslint-disable react-hooks/set-state-in-effect -- poll server action on mount and interval */
     void refresh();
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -82,8 +87,11 @@ export function SessionRoster({
     return () => {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisibility);
+      requestSeq.current += 1;
+      activeSessionId.current = "";
+      inFlight.current = false;
     };
-  }, [refresh]);
+  }, [refresh, sessionId]);
 
   if (loading) {
     return <p className="text-sm text-text-muted">Loading roster…</p>;

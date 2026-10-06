@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createSectionAction } from "@/app/actions/classroom";
-import type { ClassroomActionResult } from "@/lib/classroom/action-result";
+import { actionError, type ClassroomActionResult } from "@/lib/classroom/action-result";
 import { FormFeedback } from "@/components/classroom/FormFeedback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,12 @@ export function CreateSectionForm() {
         const formData = new FormData(event.currentTarget);
         setResult(null);
         startTransition(async () => {
-          const next = await createSectionAction(formData);
-          setResult(next);
+          try {
+            const next = await createSectionAction(formData);
+            setResult(next);
+          } catch {
+            setResult(actionError("Could not complete that action. Try again."));
+          }
         });
       }}
     >

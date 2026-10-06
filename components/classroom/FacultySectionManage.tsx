@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { rotateJoinCodeFromForm, setJoinEnabledFromForm } from "@/app/actions/classroom";
-import type { ClassroomActionResult } from "@/lib/classroom/action-result";
+import { actionError, type ClassroomActionResult } from "@/lib/classroom/action-result";
 import { CopyCodeButton } from "@/components/classroom/CopyCodeButton";
 import { FormFeedback } from "@/components/classroom/FormFeedback";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,13 @@ export function FacultySectionManage({
   const run = (formData: FormData) => {
     setResult(null);
     startTransition(async () => {
-      const action =
-        formData.get("_action") === "rotate" ? rotateJoinCodeFromForm : setJoinEnabledFromForm;
-      setResult(await action(formData));
+      try {
+        const action =
+          formData.get("_action") === "rotate" ? rotateJoinCodeFromForm : setJoinEnabledFromForm;
+        setResult(await action(formData));
+      } catch {
+        setResult(actionError("Could not complete that action. Try again."));
+      }
     });
   };
 

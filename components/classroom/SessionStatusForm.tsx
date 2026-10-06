@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { setLabSessionStatusFromForm } from "@/app/actions/classroom";
-import type { ClassroomActionResult } from "@/lib/classroom/action-result";
+import { actionError, type ClassroomActionResult } from "@/lib/classroom/action-result";
 import { FormFeedback } from "@/components/classroom/FormFeedback";
 import { Button } from "@/components/ui/button";
 
@@ -27,8 +27,12 @@ export function SessionStatusForm({
         const formData = new FormData(event.currentTarget);
         setResult(null);
         startTransition(async () => {
-          const next = await setLabSessionStatusFromForm(formData);
-          setResult(next);
+          try {
+            const next = await setLabSessionStatusFromForm(formData);
+            setResult(next);
+          } catch {
+            setResult(actionError("Could not complete that action. Try again."));
+          }
         });
       }}
     >
