@@ -23,7 +23,11 @@ export function JoinForm() {
       }}
     >
       <div className="flex flex-col sm:flex-row gap-2">
+        <label htmlFor="join_code" className="text-xs font-bold uppercase text-text-muted sr-only">
+          Join code
+        </label>
         <Input
+          id="join_code"
           name="code"
           placeholder="8-character join code"
           className="font-mono uppercase tracking-widest"

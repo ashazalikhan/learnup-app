@@ -1,4 +1,5 @@
 -- Run the whole file in the hosted SQL editor as a privileged role.
+-- If an uncaught error stops the editor before COMMIT, run ROLLBACK; yourself.
 -- A raised setup leaves nothing committed. A second successful run changes nothing
 -- (does not rotate codes, reset session status/starts_at, or overwrite fixture names).
 
@@ -102,42 +103,66 @@ begin
     raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
   end if;
 
-  -- questions
-  perform 1 from public.lab_session_questions as lq
-  where lq.session_id = v_session and lq.lesson_key = 'arrays/what-is-an-array' and lq.position = 1;
-  if not found then
-    if exists (
-      select 1 from public.lab_session_questions as lq
-      where lq.session_id = v_session and (lq.lesson_key, lq.position) <> ('arrays/what-is-an-array', 1)
-    ) then
-      raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
-    end if;
+  -- questions: full expected pair set on demo session
+  if exists (
+    select 1
+    from public.lab_session_questions as lq
+    where lq.session_id = v_session
+      and (lq.lesson_key, lq.position) not in (
+        ('arrays/what-is-an-array', 1),
+        ('arrays/indexing', 2),
+        ('arrays/traversal', 3)
+      )
+  ) then
+    raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
+  end if;
+
+  if exists (
+    select 1
+    from public.lab_session_questions as lq
+    where lq.session_id = v_session
+      and lq.lesson_key = 'arrays/what-is-an-array'
+      and lq.position <> 1
+  ) then
+    raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
+  end if;
+  if exists (
+    select 1
+    from public.lab_session_questions as lq
+    where lq.session_id = v_session
+      and lq.lesson_key = 'arrays/indexing'
+      and lq.position <> 2
+  ) then
+    raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
+  end if;
+  if exists (
+    select 1
+    from public.lab_session_questions as lq
+    where lq.session_id = v_session
+      and lq.lesson_key = 'arrays/traversal'
+      and lq.position <> 3
+  ) then
+    raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
+  end if;
+
+  if not exists (
+    select 1 from public.lab_session_questions as lq
+    where lq.session_id = v_session and lq.lesson_key = 'arrays/what-is-an-array' and lq.position = 1
+  ) then
     insert into public.lab_session_questions (session_id, lesson_key, position)
     values (v_session, 'arrays/what-is-an-array', 1);
   end if;
-
-  perform 1 from public.lab_session_questions as lq
-  where lq.session_id = v_session and lq.lesson_key = 'arrays/indexing' and lq.position = 2;
-  if not found then
-    if exists (
-      select 1 from public.lab_session_questions as lq
-      where lq.session_id = v_session and lq.position = 2 and lq.lesson_key <> 'arrays/indexing'
-    ) then
-      raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
-    end if;
+  if not exists (
+    select 1 from public.lab_session_questions as lq
+    where lq.session_id = v_session and lq.lesson_key = 'arrays/indexing' and lq.position = 2
+  ) then
     insert into public.lab_session_questions (session_id, lesson_key, position)
     values (v_session, 'arrays/indexing', 2);
   end if;
-
-  perform 1 from public.lab_session_questions as lq
-  where lq.session_id = v_session and lq.lesson_key = 'arrays/traversal' and lq.position = 3;
-  if not found then
-    if exists (
-      select 1 from public.lab_session_questions as lq
-      where lq.session_id = v_session and lq.position = 3 and lq.lesson_key <> 'arrays/traversal'
-    ) then
-      raise exception 'DEMO setup stopped: fixture id or name_key collides with a nonmatching row';
-    end if;
+  if not exists (
+    select 1 from public.lab_session_questions as lq
+    where lq.session_id = v_session and lq.lesson_key = 'arrays/traversal' and lq.position = 3
+  ) then
     insert into public.lab_session_questions (session_id, lesson_key, position)
     values (v_session, 'arrays/traversal', 3);
   end if;

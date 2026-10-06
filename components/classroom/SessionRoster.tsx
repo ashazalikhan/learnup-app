@@ -1,34 +1,48 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { pollSessionRoster, type RosterRow } from "@/app/actions/classroom";
+import { pollFacultySession, type RosterRow } from "@/app/actions/classroom";
 import { getLessonByKey } from "@/lib/curriculum/loader";
 import { formatTimeInIst } from "@/lib/classroom/time";
 
 export function SessionRoster({
   sessionId,
   questionKeys,
+  initialStatus,
+  initialTitle,
 }: {
   sessionId: string;
   questionKeys: string[];
+  initialStatus: string;
+  initialTitle: string;
 }) {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<RosterRow[]>([]);
   const [denied, setDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
+  const [sessionStatus, setSessionStatus] = useState(initialStatus);
+  const [sessionTitle, setSessionTitle] = useState(initialTitle);
   const inFlight = useRef(false);
+  const activeSessionId = useRef(sessionId);
+  const requestSeq = useRef(0);
 
   const refresh = useCallback(async () => {
     if (inFlight.current) return;
     inFlight.current = true;
+    const seq = ++requestSeq.current;
     try {
-      const result = await pollSessionRoster(sessionId);
+      const result = await pollFacultySession(sessionId);
+      if (seq !== requestSeq.current || activeSessionId.current !== sessionId) {
+        return;
+      }
       if (result.ok) {
         setRows(result.rows);
         setDenied(false);
         setError(null);
         setRefreshedAt(result.refreshedAt);
+        setSessionStatus(result.sessionStatus);
+        setSessionTitle(result.sessionTitle);
       } else if (result.denied) {
         setDenied(true);
         setRows([]);
@@ -36,14 +50,22 @@ export function SessionRoster({
       } else {
         setError(result.error);
       }
+    } catch {
+      if (seq === requestSeq.current && activeSessionId.current === sessionId) {
+        setError("Could not load roster.");
+      }
     } finally {
       inFlight.current = false;
-      setLoading(false);
+      if (seq === requestSeq.current) {
+        setLoading(false);
+      }
     }
   }, [sessionId]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- poll server action on mount and interval */
     void refresh();
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const interval = window.setInterval(() => {
       if (document.visibilityState === "hidden") return;
@@ -73,11 +95,12 @@ export function SessionRoster({
 
   return (
     <div className="space-y-4">
+      <p className="text-xs text-text-muted">
+        {sessionTitle} · <span className="font-bold uppercase">{sessionStatus}</span>
+      </p>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {refreshedAt ? (
-        <p className="text-xs text-text-muted">
-          Last updated {formatTimeInIst(refreshedAt)}
-        </p>
+        <p className="text-xs text-text-muted">Last updated {formatTimeInIst(refreshedAt)}</p>
       ) : null}
 
       <p className="text-xs text-text-muted leading-relaxed">

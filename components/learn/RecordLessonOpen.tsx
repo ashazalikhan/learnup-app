@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { recordLessonOpen } from "@/app/actions/classroom";
 
 export function RecordLessonOpen({ lessonKey }: { lessonKey: string }) {
-  const sent = useRef(false);
-
   useEffect(() => {
-    if (sent.current) return;
-    sent.current = true;
-    void recordLessonOpen(lessonKey);
+    void recordLessonOpen(lessonKey).then((result) => {
+      if (!result.ok) {
+        console.warn("lesson open not recorded", lessonKey);
+      }
+    });
   }, [lessonKey]);
 
   return null;

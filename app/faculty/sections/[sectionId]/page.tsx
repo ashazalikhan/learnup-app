@@ -1,16 +1,9 @@
 import { notFound } from "next/navigation";
-import {
-  createLabSessionFormAction,
-  rotateJoinCodeFromForm,
-  setJoinEnabledFromForm,
-  setLabSessionStatusFromForm,
-} from "@/app/actions/classroom";
-import { CopyCodeButton } from "@/components/classroom/CopyCodeButton";
-import { ARRAYS_LESSON_ALLOWLIST } from "@/lib/classroom/allowlist";
+import { CreateLabSessionForm } from "@/components/classroom/CreateLabSessionForm";
+import { FacultySectionManage } from "@/components/classroom/FacultySectionManage";
+import { SessionStatusForm } from "@/components/classroom/SessionStatusForm";
 import { formatInIst } from "@/lib/classroom/time";
 import { getLessonByKey } from "@/lib/curriculum/loader";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -33,12 +26,20 @@ export default async function FacultySectionPage({ params }: SectionPageProps) {
   const { sectionId } = await params;
   const supabase = await createClient();
 
-  const { data: overview } = await supabase.rpc("my_faculty_sections");
+  const { data: overview, error: overviewError } = await supabase.rpc("my_faculty_sections");
+  if (overviewError) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <p className="text-sm text-destructive">Could not load this section.</p>
+      </div>
+    );
+  }
+
   const sections = (overview ?? []) as FacultySectionRow[];
   const section = sections.find((s) => s.section_id === sectionId);
   if (!section) notFound();
 
-  const { data: sessions } = await supabase
+  const { data: sessions, error: sessionsError } = await supabase
     .from("lab_sessions")
     .select("id, week_no, title, starts_at, status")
     .eq("section_id", sectionId)
@@ -46,21 +47,23 @@ export default async function FacultySectionPage({ params }: SectionPageProps) {
     .order("starts_at");
 
   const sessionIds = (sessions ?? []).map((s) => s.id);
-  const { data: questions } =
+  const questionsResult =
     sessionIds.length > 0
       ? await supabase
           .from("lab_session_questions")
           .select("session_id, lesson_key, position")
           .in("session_id", sessionIds)
           .order("position")
-      : { data: [] };
+      : { data: [], error: null };
 
   type QuestionRow = { session_id: string; lesson_key: string; position: number };
   const questionsBySession = new Map<string, QuestionRow[]>();
-  for (const q of (questions ?? []) as QuestionRow[]) {
-    const list = questionsBySession.get(q.session_id) ?? [];
-    list.push(q);
-    questionsBySession.set(q.session_id, list);
+  if (!questionsResult.error) {
+    for (const q of (questionsResult.data ?? []) as QuestionRow[]) {
+      const list = questionsBySession.get(q.session_id) ?? [];
+      list.push(q);
+      questionsBySession.set(q.session_id, list);
+    }
   }
 
   return (
@@ -73,65 +76,21 @@ export default async function FacultySectionPage({ params }: SectionPageProps) {
         <p className="text-xs text-text-muted">
           {section.student_count} student{section.student_count === 1 ? "" : "s"}
         </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <code className="font-mono text-sm bg-muted px-2 py-1 rounded">{section.join_code}</code>
-          <CopyCodeButton code={section.join_code} />
-          <span className="text-xs font-bold uppercase">
-            {section.join_enabled ? "Enabled" : "Disabled"}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <form action={rotateJoinCodeFromForm}>
-            <input type="hidden" name="section_id" value={sectionId} />
-            <Button type="submit" variant="outline" size="sm">Rotate code</Button>
-          </form>
-          {section.join_enabled ? (
-            <form action={setJoinEnabledFromForm}>
-              <input type="hidden" name="section_id" value={sectionId} />
-              <input type="hidden" name="enabled" value="false" />
-              <Button type="submit" variant="outline" size="sm">Disable code</Button>
-            </form>
-          ) : (
-            <form action={setJoinEnabledFromForm}>
-              <input type="hidden" name="section_id" value={sectionId} />
-              <input type="hidden" name="enabled" value="true" />
-              <Button type="submit" variant="outline" size="sm">Enable code</Button>
-            </form>
-          )}
-        </div>
+        <FacultySectionManage
+          sectionId={sectionId}
+          joinCode={section.join_code}
+          joinEnabled={section.join_enabled}
+        />
       </header>
 
       <section className="rounded-2xl border-2 border-border bg-card p-5 space-y-4">
         <h2 className="text-sm font-extrabold uppercase tracking-wide">Create lab session</h2>
-        <form action={createLabSessionFormAction.bind(null, sectionId)} className="space-y-4">
-          <Input name="title" placeholder="Session title" required />
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold uppercase text-text-muted">Week (1–16)</label>
-              <Input name="week_no" type="number" min={1} max={16} required />
-            </div>
-            <div>
-              <label className="text-xs font-bold uppercase text-text-muted">
-                Starts (IST, Asia/Kolkata)
-              </label>
-              <Input name="starts_at" type="datetime-local" required />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase text-text-muted">Questions (Arrays allowlist)</p>
-            {ARRAYS_LESSON_ALLOWLIST.map((key) => {
-              const lesson = getLessonByKey(key);
-              return (
-                <label key={key} className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" name={`lesson_${key}`} />
-                  {lesson?.title ?? key}
-                </label>
-              );
-            })}
-          </div>
-          <Button type="submit" variant="cta">Create session (live)</Button>
-        </form>
+        <CreateLabSessionForm sectionId={sectionId} />
       </section>
+
+      {sessionsError || questionsResult.error ? (
+        <p className="text-sm text-destructive">Could not load lab sessions for this section.</p>
+      ) : null}
 
       <div className="space-y-4">
         {(sessions ?? []).map((session) => {
@@ -164,18 +123,11 @@ export default async function FacultySectionPage({ params }: SectionPageProps) {
                   return <li key={q.lesson_key}>{lesson?.title ?? q.lesson_key}</li>;
                 })}
               </ul>
-              <form action={setLabSessionStatusFromForm}>
-                <input type="hidden" name="session_id" value={session.id} />
-                <input type="hidden" name="section_id" value={sectionId} />
-                <input
-                  type="hidden"
-                  name="status"
-                  value={session.status === "live" ? "closed" : "live"}
-                />
-                <Button type="submit" variant="outline" size="sm">
-                  {session.status === "live" ? "Close session" : "Reopen session"}
-                </Button>
-              </form>
+              <SessionStatusForm
+                sessionId={session.id}
+                sectionId={sectionId}
+                currentStatus={session.status}
+              />
               <p className="text-xs text-text-muted">Closing does not lock lessons.</p>
             </article>
           );

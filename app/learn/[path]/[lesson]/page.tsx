@@ -97,7 +97,7 @@ export default async function LearnLessonPage({ params }: LearnLessonPageProps) 
 
   return (
     <>
-      {user ? <RecordLessonOpen lessonKey={lessonKey} /> : null}
+      {user ? <RecordLessonOpen key={lessonKey} lessonKey={lessonKey} /> : null}
       <LessonWorkspace
         lesson={lesson}
         pathTitle={path.title}

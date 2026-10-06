@@ -278,7 +278,6 @@ as $$
 declare
   v_normalized text;
   v_section_id uuid;
-  v_existing_role text;
 begin
   if auth.uid() is null then
     raise exception using errcode = 'P0001', message = 'invalid join code';
@@ -303,18 +302,9 @@ begin
     raise exception using errcode = 'P0001', message = 'invalid join code';
   end if;
 
-  select public.section_memberships.role
-    into v_existing_role
-  from public.section_memberships
-  where public.section_memberships.section_id = v_section_id
-    and public.section_memberships.user_id = auth.uid();
-
-  if v_existing_role is not null then
-    return v_section_id;
-  end if;
-
   insert into public.section_memberships (section_id, user_id, role)
-  values (v_section_id, auth.uid(), 'student');
+  values (v_section_id, auth.uid(), 'student')
+  on conflict (section_id, user_id) do nothing;
 
   return v_section_id;
 end;

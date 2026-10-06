@@ -1,4 +1,5 @@
 -- Manual demo teardown. Not auto-run.
+-- If an uncaught error stops the editor before COMMIT, run ROLLBACK; yourself.
 -- Does not delete faculty_grants, profiles, lesson_attempts, user_lesson_progress,
 -- lesson_opens, or auth.users.
 
@@ -13,6 +14,8 @@ declare
   v_session uuid := '44444444-4444-4444-8444-444444444444';
   v_any boolean;
   v_row record;
+  v_memberships integer;
+  v_join_codes integer;
 begin
   v_any := exists (select 1 from public.institutions as i where i.id = v_inst)
     or exists (select 1 from public.courses as c where c.id in (v_dsa, v_daa))
@@ -28,10 +31,16 @@ begin
     raise exception 'DEMO cleanup stopped: partial or mismatched fixtures';
   end if;
 
-  select * into v_row from public.institutions as i where i.id = v_inst;
+  select * into v_row from public.institutions as i where i.id = v_inst for update;
+
   if v_row.name <> 'DEMO College' then
     raise exception 'DEMO cleanup stopped: partial or mismatched fixtures';
   end if;
+
+  perform 1 from public.courses as c where c.id = v_dsa for update;
+  perform 1 from public.courses as c where c.id = v_daa for update;
+  perform 1 from public.sections as s where s.id = v_section for update;
+  perform 1 from public.lab_sessions as ls where ls.id = v_session for update;
 
   if not exists (select 1 from public.courses as c where c.id = v_dsa) then
     raise exception 'DEMO cleanup stopped: partial or mismatched fixtures';
@@ -116,6 +125,17 @@ begin
   ) then
     raise exception 'DEMO cleanup stopped: partial or mismatched fixtures';
   end if;
+
+  select count(*) into v_memberships
+  from public.section_memberships as sm
+  where sm.section_id = v_section;
+
+  select count(*) into v_join_codes
+  from public.section_join_codes as jc
+  where jc.section_id = v_section;
+
+  raise notice 'DEMO cleanup preview: institution=%, courses=2, section=%, memberships=%, join_codes=%, session=%, questions=3',
+    v_inst, v_section, v_memberships, v_join_codes, v_session;
 
   delete from public.institutions as i
   where i.id = v_inst and i.name = 'DEMO College';
