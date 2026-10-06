@@ -65,7 +65,23 @@ $assert$;
 revoke all on function pg_temp.proof_impersonate(uuid) from public;
 revoke all on function pg_temp.proof_clear() from public;
 revoke all on function pg_temp.proof_assert_msg(text, text, text, text) from public;
-grant usage on schema pg_temp to authenticated;
+do $temp_acl$
+declare
+  v_temp_schema text;
+begin
+  select n.nspname into v_temp_schema
+  from pg_catalog.pg_namespace as n
+  where n.oid = pg_catalog.pg_my_temp_schema();
+
+  if v_temp_schema is null then
+    raise exception 'proof setup stopped: temporary schema was not initialized';
+  end if;
+
+  execute pg_catalog.format(
+    'grant usage on schema %I to authenticated',
+    v_temp_schema
+  );
+end $temp_acl$;
 grant execute on function pg_temp.proof_impersonate(uuid) to authenticated;
 grant execute on function pg_temp.proof_clear() to authenticated;
 grant execute on function pg_temp.proof_assert_msg(text, text, text, text) to authenticated;
